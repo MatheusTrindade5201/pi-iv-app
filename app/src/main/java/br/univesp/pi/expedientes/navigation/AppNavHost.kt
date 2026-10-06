@@ -33,7 +33,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.univesp.pi.expedientes.R
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
-import br.univesp.pi.expedientes.feature.auth.LoginPlaceholderScreen
+import br.univesp.pi.expedientes.feature.auth.LoginEntry
+import br.univesp.pi.expedientes.feature.auth.RegisterEntry
 import br.univesp.pi.expedientes.feature.history.HistoryScreen
 import br.univesp.pi.expedientes.feature.home.HomeEntry
 import br.univesp.pi.expedientes.feature.profile.ProfileScreen
@@ -42,15 +43,17 @@ import br.univesp.pi.expedientes.feature.profile.ProfileScreen
 fun AppNavHost(
     isLoggedIn: Boolean,
     navController: NavHostController = rememberNavController(),
+    loginContent: @Composable (onRegisterClick: () -> Unit) -> Unit = { LoginEntry(onRegisterClick = it) },
+    registerContent: @Composable (onLoginClick: () -> Unit) -> Unit = { RegisterEntry(onLoginClick = it) },
     homeContent: @Composable () -> Unit = { HomeEntry() },
 ) {
     val startDestination = remember { if (isLoggedIn) HomeRoute else LoginRoute }
     LaunchedEffect(isLoggedIn) {
-        val onLogin = navController.currentDestination?.hasRoute(LoginRoute::class) == true
-        if (!isLoggedIn && !onLogin && navController.currentDestination != null) {
-            navController.navigate(LoginRoute) {
-                popUpTo(navController.graph.id) { inclusive = true }
-            }
+        val destination = navController.currentDestination ?: return@LaunchedEffect
+        val onAuth = destination.hasRoute(LoginRoute::class) || destination.hasRoute(RegisterRoute::class)
+        when {
+            isLoggedIn && onAuth -> navController.resetTo(HomeRoute)
+            !isLoggedIn && !onAuth -> navController.resetTo(LoginRoute)
         }
     }
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -75,13 +78,10 @@ fun AppNavHost(
             modifier = Modifier.padding(padding),
         ) {
             composable<LoginRoute> {
-                LoginPlaceholderScreen(
-                    onEnter = {
-                        navController.navigate(HomeRoute) {
-                            popUpTo<LoginRoute> { inclusive = true }
-                        }
-                    },
-                )
+                loginContent { navController.navigate(RegisterRoute) { launchSingleTop = true } }
+            }
+            composable<RegisterRoute> {
+                registerContent { navController.popBackStack() }
             }
             composable<HomeRoute> { homeContent() }
             composable<HistoryRoute> { HistoryScreen() }
@@ -141,5 +141,11 @@ private fun NavHostController.navigateToTab(destination: TopLevelDestination) {
         popUpTo(graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
         restoreState = true
+    }
+}
+
+private fun NavHostController.resetTo(route: Any) {
+    navigate(route) {
+        popUpTo(graph.id) { inclusive = true }
     }
 }

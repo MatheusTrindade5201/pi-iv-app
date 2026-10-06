@@ -12,7 +12,7 @@ univesp/
 
 ## Status
 
-Etapas 1–2 de 10 concluídas (scaffold; camada de rede com DTOs de todos os endpoints, sessão com token e logout automático em 401). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+Etapas 1–3 de 10 concluídas (scaffold; camada de rede e sessão; telas de Login e Cadastro com validação e entrada automática no app). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 

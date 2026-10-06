@@ -10,6 +10,9 @@ import kotlin.reflect.KClass
 data object LoginRoute
 
 @Serializable
+data object RegisterRoute
+
+@Serializable
 data object HomeRoute
 
 @Serializable

@@ -10,6 +10,9 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
+import br.univesp.pi.expedientes.feature.auth.AuthFormState
+import br.univesp.pi.expedientes.feature.auth.LoginScreen
+import br.univesp.pi.expedientes.feature.auth.RegisterScreen
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,7 +31,12 @@ class AppNavHostTest {
         loggedIn.value = isLoggedIn
         composeRule.setContent {
             ExpedientesTheme {
-                AppNavHost(isLoggedIn = loggedIn.value, homeContent = { Text("conteudo da home") })
+                AppNavHost(
+                    isLoggedIn = loggedIn.value,
+                    loginContent = { onRegister -> LoginScreen(AuthFormState(), { _, _ -> }, {}, onRegister) },
+                    registerContent = { onLogin -> RegisterScreen(AuthFormState(), { _, _ -> }, {}, onLogin) },
+                    homeContent = { Text("conteudo da home") },
+                )
             }
         }
     }
@@ -42,22 +50,44 @@ class AppNavHostTest {
     }
 
     @Test
-    fun loggedInStartsOnHome() {
-        launch(isLoggedIn = true)
+    fun loginLinksToRegisterAndBack() {
+        launch(isLoggedIn = false)
+
+        composeRule.onNodeWithText("Cadastrar-se").performClick()
+        composeRule.onNodeWithText("Cadastre").assertIsDisplayed()
+
+        composeRule.onNodeWithText("Entrar").performClick()
+        composeRule.onNodeWithText("Entre").assertIsDisplayed()
+    }
+
+    @Test
+    fun sessionStartedOnLoginOpensHome() {
+        launch(isLoggedIn = false)
+
+        loggedIn.value = true
+        composeRule.waitForIdle()
 
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_Home").assertIsSelected()
     }
 
     @Test
-    fun enterOpensHomeTab() {
+    fun sessionStartedOnRegisterOpensHome() {
         launch(isLoggedIn = false)
+        composeRule.onNodeWithText("Cadastrar-se").performClick()
 
-        composeRule.onNodeWithText("Entrar").performClick()
+        loggedIn.value = true
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
+    }
+
+    @Test
+    fun loggedInStartsOnHome() {
+        launch(isLoggedIn = true)
 
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_Home").assertIsSelected()
-        composeRule.onNodeWithTag("tab_History").assertIsNotSelected()
     }
 
     @Test

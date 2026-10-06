@@ -8,7 +8,28 @@
 
   <string name="login_title">Entre</string>
   <string name="login_enter">Entrar</string>
-  <string name="login_placeholder_hint">Tela de login completa na etapa 3</string>
+  <string name="login_go_register">Cadastrar-se</string>
+  <string name="register_title">Cadastre</string>
+  <string name="register_submit">Cadastrar</string>
+  <string name="register_go_login">Entrar</string>
+
+  <string name="field_name">Nome</string>
+  <string name="field_email">Email</string>
+  <string name="field_password">Senha</string>
+  <string name="field_password_confirm">Confirmar Senha</string>
+  <string name="placeholder_name">Nome Sobrenome</string>
+  <string name="placeholder_email">exemplo@gmail.com</string>
+  <string name="placeholder_password">**********</string>
+
+  <string name="error_blank_name">Informe seu nome</string>
+  <string name="error_long_name">Use no máximo 120 caracteres</string>
+  <string name="error_invalid_email">Informe um e-mail válido</string>
+  <string name="error_blank_password">Informe a senha</string>
+  <string name="error_short_password">A senha precisa ter pelo menos 8 caracteres</string>
+  <string name="error_long_password">Use no máximo 128 caracteres</string>
+  <string name="error_password_mismatch">As senhas não conferem</string>
+  <string name="error_network">Sem conexão com o servidor. Verifique a internet e tente novamente.</string>
+  <string name="error_unexpected">Erro inesperado. Tente novamente.</string>
 
   <string name="home_greeting">Olá</string>
   <string name="home_api_title">Conexão com a API</string>

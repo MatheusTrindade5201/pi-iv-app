@@ -15,6 +15,7 @@ import br.univesp.pi.expedientes.core.network.api.TrackPointBatchResult
 import br.univesp.pi.expedientes.core.network.api.TrackPointResponse
 import br.univesp.pi.expedientes.core.network.api.UserResponse
 import br.univesp.pi.expedientes.core.network.api.VehicleResponse
+import br.univesp.pi.expedientes.testing.Fixtures
 import kotlinx.serialization.DeserializationStrategy
 import kotlinx.serialization.builtins.ListSerializer
 import org.junit.Assert.assertEquals
@@ -25,8 +26,7 @@ import org.junit.Test
 import java.math.BigDecimal
 
 class ApiContractTest {
-    private fun fixture(name: String): String =
-        requireNotNull(javaClass.classLoader?.getResource("api/$name.json")) { "fixture $name ausente" }.readText()
+    private fun fixture(name: String): String = Fixtures.read(name)
 
     private fun <T> decode(
         strategy: DeserializationStrategy<T>,
