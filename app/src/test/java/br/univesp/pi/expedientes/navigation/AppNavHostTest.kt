@@ -1,7 +1,9 @@
 package br.univesp.pi.expedientes.navigation
 
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -35,7 +37,9 @@ class AppNavHostTest {
                     isLoggedIn = loggedIn.value,
                     loginContent = { onRegister -> LoginScreen(AuthFormState(), { _, _ -> }, {}, onRegister) },
                     registerContent = { onLogin -> RegisterScreen(AuthFormState(), { _, _ -> }, {}, onLogin) },
-                    homeContent = { Text("conteudo da home") },
+                    homeContent = { openProfile ->
+                        Text("conteudo da home", Modifier.clickable(onClick = openProfile))
+                    },
                     profileContent = { Text("conteudo do perfil") },
                 )
             }
@@ -106,6 +110,16 @@ class AppNavHostTest {
 
         composeRule.onNodeWithTag("tab_Home").performClick()
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
+    }
+
+    @Test
+    fun homeCanOpenProfileTab() {
+        launch(isLoggedIn = true)
+
+        composeRule.onNodeWithText("conteudo da home").performClick()
+
+        composeRule.onNodeWithTag("tab_Profile").assertIsSelected()
+        composeRule.onNodeWithText("conteudo do perfil").assertIsDisplayed()
     }
 
     @Test

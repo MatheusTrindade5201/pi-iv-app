@@ -174,6 +174,7 @@ Protótipos: [login e cadastro](prototypes/01-login-cadastro.png) · [home sem e
 | **Home (sem expediente)** | "Sábado, 19 de Setembro", "Olá, {nome}" | data local + `GET /users/me` |
 | | Card "Último registro — Ontem — Lucro do dia" com Ganhos, Combustível, KM, Tempo, Valor hora, Valor por KM | dia mais recente de `GET /analytics/daily` (valor hora/km calculados no app a partir dos totais, mesma regra `ROUND_HALF_UP` da API) |
 | | "Iniciar expediente" (também na Home, não só no Histórico) | `POST /shifts` |
+| | Sem moto → diálogo "Cadastre sua moto" com "Ir para o Perfil"; moto Flex → escolha Gasolina/Etanol; 409 → recarrega a Home e, se não houver expediente aberto, mostra a mensagem da API com "Ir para o Perfil" | `GET /vehicles`, `GET /shifts/current` |
 | **Home (em andamento)** | "Expediente em andamento 3h 42min", Lucro Parcial, Ganhos, Combustível, KM, Tempo, Valor hora, Valor por KM | `GET /shifts/current` (atualização periódica) |
 | | "GPS ativo – último ponto há 4s" | relógio local + `gps.last_point_at` |
 | | "Lançar ganho" (R$ 5 / 8 / 12 / 20) | `POST /shifts/{id}/earnings` |
@@ -237,7 +238,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 2 | **Rede e sessão** | Retrofit/OkHttp/serialization, DTOs de todos os endpoints, `AuthInterceptor`, DataStore do token, `ApiError`, logout em 401; testes com `MockWebServer` | Testes de rede verdes | ✅ |
 | 3 | **Login e Cadastro** | Telas "Entre" e "Cadastre", validação local (senhas iguais, ≥ 8 caracteres), erros da API na tela, sessão persistida | Cadastro → login → abas; reabrir o app mantém logado | ✅ |
 | 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | ✅ |
-| 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | |
+| 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | ✅ (Home; botão do Histórico na etapa 8) |
 | 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `SyncWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | |
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | |
 | 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | |

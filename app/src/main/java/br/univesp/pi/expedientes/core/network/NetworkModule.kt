@@ -10,7 +10,6 @@ import br.univesp.pi.expedientes.core.network.api.ShiftApi
 import br.univesp.pi.expedientes.core.network.api.TrackPointApi
 import br.univesp.pi.expedientes.core.network.api.UserApi
 import br.univesp.pi.expedientes.core.network.api.VehicleApi
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -107,11 +106,4 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideAnalyticsApi(retrofit: Retrofit): AnalyticsApi = retrofit.create(AnalyticsApi::class.java)
-}
-
-@Module
-@InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
-    @Binds
-    abstract fun bindHealthRepository(impl: DefaultHealthRepository): HealthRepository
 }

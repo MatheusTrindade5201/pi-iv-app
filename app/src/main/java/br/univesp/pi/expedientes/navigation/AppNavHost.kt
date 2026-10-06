@@ -45,7 +45,7 @@ fun AppNavHost(
     navController: NavHostController = rememberNavController(),
     loginContent: @Composable (onRegisterClick: () -> Unit) -> Unit = { LoginEntry(onRegisterClick = it) },
     registerContent: @Composable (onLoginClick: () -> Unit) -> Unit = { RegisterEntry(onLoginClick = it) },
-    homeContent: @Composable () -> Unit = { HomeEntry() },
+    homeContent: @Composable (onOpenProfile: () -> Unit) -> Unit = { HomeEntry(onOpenProfile = it) },
     profileContent: @Composable () -> Unit = { ProfileEntry() },
 ) {
     val startDestination = remember { if (isLoggedIn) HomeRoute else LoginRoute }
@@ -84,7 +84,7 @@ fun AppNavHost(
             composable<RegisterRoute> {
                 registerContent { navController.popBackStack() }
             }
-            composable<HomeRoute> { homeContent() }
+            composable<HomeRoute> { homeContent { navController.navigateToTab(TopLevelDestination.Profile) } }
             composable<HistoryRoute> { HistoryScreen() }
             composable<ProfileRoute> { profileContent() }
         }

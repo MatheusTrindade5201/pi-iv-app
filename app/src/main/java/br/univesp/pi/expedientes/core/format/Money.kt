@@ -11,6 +11,8 @@ private val ptBr = Locale.forLanguageTag("pt-BR")
 private fun moneyFormat(): DecimalFormat =
     DecimalFormat("#,##0.00", DecimalFormatSymbols(ptBr)).apply { roundingMode = RoundingMode.HALF_UP }
 
+fun formatAmount(value: BigDecimal): String = moneyFormat().format(value)
+
 fun formatBrl(value: BigDecimal): String {
     val text = "R$ " + moneyFormat().format(value.abs())
     return if (value.signum() < 0) "-$text" else text

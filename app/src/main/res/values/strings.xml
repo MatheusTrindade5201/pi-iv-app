@@ -31,12 +31,29 @@
   <string name="error_network">Sem conexão com o servidor. Verifique a internet e tente novamente.</string>
   <string name="error_unexpected">Erro inesperado. Tente novamente.</string>
 
-  <string name="home_greeting">Olá</string>
-  <string name="home_api_title">Conexão com a API</string>
-  <string name="home_api_checking">Verificando…</string>
-  <string name="home_api_connected">API conectada</string>
-  <string name="home_api_unavailable">API indisponível</string>
-  <string name="home_api_retry">Tentar de novo</string>
+
+  <string name="home_greeting">Olá, %1$s</string>
+  <string name="home_last_record">Último registro</string>
+  <string name="home_today">Hoje</string>
+  <string name="home_yesterday">Ontem</string>
+  <string name="home_day_profit">Lucro do dia</string>
+  <string name="home_no_records">Nenhum expediente registrado ainda.</string>
+  <string name="home_earnings">Ganhos</string>
+  <string name="home_fuel">Combustível</string>
+  <string name="home_km">KM</string>
+  <string name="home_time">Tempo</string>
+  <string name="home_per_hour">Valor hora</string>
+  <string name="home_per_km">Valor por KM</string>
+  <string name="home_start_shift">Iniciar expediente</string>
+  <string name="home_in_progress">Expediente em andamento</string>
+  <string name="home_partial_profit">Lucro Parcial</string>
+  <string name="home_retry">Tentar de novo</string>
+  <string name="home_go_profile">Ir para o Perfil</string>
+  <string name="home_no_vehicle_title">Cadastre sua moto</string>
+  <string name="home_no_vehicle_text">Para iniciar um expediente, cadastre sua moto e os valores do combustível no Perfil.</string>
+  <string name="home_choose_fuel">Qual combustível você abasteceu?</string>
+  <string name="home_choose_fuel_hint">Sua moto é Flex: o custo do expediente usa o preço do combustível escolhido.</string>
+  <string name="cancel">Cancelar</string>
 
   <string name="history_title">Histórico</string>
   <string name="profile_title">Perfil</string>

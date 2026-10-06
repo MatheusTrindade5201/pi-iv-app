@@ -21,6 +21,12 @@ class MoneyTest {
     }
 
     @Test
+    fun amountWithoutSymbol() {
+        assertEquals("2,40", formatAmount(BigDecimal("2.4")))
+        assertEquals("1.234,50", formatAmount(BigDecimal("1234.5")))
+    }
+
+    @Test
     fun signedCurrency() {
         assertEquals("+R$ 187,40", formatSignedBrl(BigDecimal("187.40")))
         assertEquals("+R$ 0,00", formatSignedBrl(BigDecimal.ZERO))
