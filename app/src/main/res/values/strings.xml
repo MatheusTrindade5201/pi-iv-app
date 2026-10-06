@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">Expedientes</string>
+
+  <string name="nav_home">Home</string>
+  <string name="nav_history">Histórico</string>
+  <string name="nav_profile">Perfil</string>
+
+  <string name="login_title">Entre</string>
+  <string name="login_enter">Entrar</string>
+  <string name="login_placeholder_hint">Tela de login completa na etapa 3</string>
+
+  <string name="home_greeting">Olá</string>
+  <string name="home_api_title">Conexão com a API</string>
+  <string name="home_api_checking">Verificando…</string>
+  <string name="home_api_connected">API conectada</string>
+  <string name="home_api_unavailable">API indisponível</string>
+  <string name="home_api_retry">Tentar de novo</string>
+
+  <string name="history_title">Histórico</string>
+  <string name="profile_title">Perfil</string>
+  <string name="screen_under_construction">Em construção</string>
+</resources>
