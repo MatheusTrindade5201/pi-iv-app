@@ -37,7 +37,7 @@ import br.univesp.pi.expedientes.feature.auth.LoginEntry
 import br.univesp.pi.expedientes.feature.auth.RegisterEntry
 import br.univesp.pi.expedientes.feature.history.HistoryScreen
 import br.univesp.pi.expedientes.feature.home.HomeEntry
-import br.univesp.pi.expedientes.feature.profile.ProfileScreen
+import br.univesp.pi.expedientes.feature.profile.ProfileEntry
 
 @Composable
 fun AppNavHost(
@@ -46,6 +46,7 @@ fun AppNavHost(
     loginContent: @Composable (onRegisterClick: () -> Unit) -> Unit = { LoginEntry(onRegisterClick = it) },
     registerContent: @Composable (onLoginClick: () -> Unit) -> Unit = { RegisterEntry(onLoginClick = it) },
     homeContent: @Composable () -> Unit = { HomeEntry() },
+    profileContent: @Composable () -> Unit = { ProfileEntry() },
 ) {
     val startDestination = remember { if (isLoggedIn) HomeRoute else LoginRoute }
     LaunchedEffect(isLoggedIn) {
@@ -85,7 +86,7 @@ fun AppNavHost(
             }
             composable<HomeRoute> { homeContent() }
             composable<HistoryRoute> { HistoryScreen() }
-            composable<ProfileRoute> { ProfileScreen() }
+            composable<ProfileRoute> { profileContent() }
         }
     }
 }

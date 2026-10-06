@@ -40,5 +40,48 @@
 
   <string name="history_title">Histórico</string>
   <string name="profile_title">Perfil</string>
+  <string name="profile_name">Nome</string>
+  <string name="profile_name_saving">Salvando…</string>
+  <string name="profile_name_saved">Salvo</string>
+  <string name="profile_add_vehicle">Cadastrar veículo</string>
+  <string name="profile_my_vehicle">Minha moto</string>
+  <string name="profile_fuel">Combustível</string>
+  <string name="profile_average_consumption">Consumo médio</string>
+  <string name="profile_kml_value">%1$s km/l</string>
+  <string name="profile_update_vehicle">Atualizar</string>
+  <string name="profile_fuel_values">Valores do combustível</string>
+  <string name="profile_edit_fuel_values">Editar valores do combustível</string>
+  <string name="profile_no_price">—</string>
+  <string name="profile_logout">Sair da conta</string>
+  <string name="profile_load_error_retry">Tentar de novo</string>
+
+  <string name="vehicle_sheet_create">Cadastrar moto</string>
+  <string name="vehicle_sheet_update">Atualizar moto</string>
+  <string name="vehicle_model">Modelo</string>
+  <string name="vehicle_model_placeholder">Honda</string>
+  <string name="vehicle_kml_placeholder">32</string>
+  <string name="vehicle_kml_suffix">km/l</string>
+  <string name="vehicle_how_to_measure">Como medir?</string>
+  <string name="vehicle_displacement">Cilindrada</string>
+  <string name="vehicle_year">Ano</string>
+  <string name="vehicle_optional">Opcional</string>
+  <string name="save">Salvar</string>
+  <string name="close">Fechar</string>
+
+  <string name="measure_help_title">Como medir o consumo médio</string>
+  <string name="measure_help_text">1. Encha o tanque até o fim e zere o hodômetro parcial.\n2. Rode normalmente por pelo menos 100 km.\n3. Encha o tanque de novo e anote quantos litros entraram.\n4. Divida os km rodados pelos litros abastecidos. Ex.: 320 km ÷ 10 L = 32 km/l.</string>
+
+  <string name="fuel_gasoline">Gasolina</string>
+  <string name="fuel_ethanol">Etanol</string>
+  <string name="fuel_flex">Flex</string>
+  <string name="price_placeholder">R$ 0,00</string>
+
+  <string name="error_model_blank">Informe o modelo</string>
+  <string name="error_model_long">Use no máximo 120 caracteres</string>
+  <string name="error_kml">Informe um consumo entre 0 e 999,99 km/l</string>
+  <string name="error_displacement">Cilindrada entre 1 e 3000</string>
+  <string name="error_year">Ano entre 1950 e o ano que vem</string>
+  <string name="error_price">Informe um valor entre R$ 0,01 e R$ 999,99</string>
+  <string name="error_no_price">Informe pelo menos um valor</string>
   <string name="screen_under_construction">Em construção</string>
 </resources>

@@ -32,12 +32,13 @@ fun LabeledTextField(
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     trailingText: String? = null,
     testTag: String? = null,
+    showLabel: Boolean = true,
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyLarge)
+        if (showLabel) Text(text = label, style = MaterialTheme.typography.bodyLarge)
         OutlinedTextField(
             value = value,
             onValueChange = onValueChange,

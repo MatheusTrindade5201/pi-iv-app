@@ -36,6 +36,7 @@ class AppNavHostTest {
                     loginContent = { onRegister -> LoginScreen(AuthFormState(), { _, _ -> }, {}, onRegister) },
                     registerContent = { onLogin -> RegisterScreen(AuthFormState(), { _, _ -> }, {}, onLogin) },
                     homeContent = { Text("conteudo da home") },
+                    profileContent = { Text("conteudo do perfil") },
                 )
             }
         }
@@ -100,6 +101,7 @@ class AppNavHostTest {
 
         composeRule.onNodeWithTag("tab_Profile").performClick()
         composeRule.onNodeWithTag("tab_Profile").assertIsSelected()
+        composeRule.onNodeWithText("conteudo do perfil").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_Home").assertIsNotSelected()
 
         composeRule.onNodeWithTag("tab_Home").performClick()

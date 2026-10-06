@@ -12,7 +12,7 @@ univesp/
 
 ## Status
 
-Etapas 1–3 de 10 concluídas (scaffold; camada de rede e sessão; telas de Login e Cadastro com validação e entrada automática no app). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+Etapas 1–4 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil com moto, preços do combustível e sair). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 

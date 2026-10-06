@@ -77,3 +77,11 @@ private fun validationMessage(errors: JsonArray): String {
 }
 
 private fun fallbackMessage(code: Int): String = "Erro inesperado ($code)"
+
+fun ApiResult<*>.asFailure(): ApiResult<Nothing> =
+    when (this) {
+        is ApiResult.Success -> error("Resultado de sucesso não é uma falha")
+        is ApiResult.HttpError -> ApiResult.HttpError(code, message)
+        ApiResult.NetworkError -> ApiResult.NetworkError
+        ApiResult.UnexpectedError -> ApiResult.UnexpectedError
+    }

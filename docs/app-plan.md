@@ -168,6 +168,7 @@ Protótipos: [login e cadastro](prototypes/01-login-cadastro.png) · [home sem e
 | | "Cadastrar veículo" / "Minha moto" / "Atualizar" | `GET /vehicles`, `POST /vehicles`, `PATCH /vehicles/{id}` |
 | | Combustível (Gasolina/Etanol/Flex) | `GET /fuels` |
 | | "Valores do combustível" (ver/editar) | `GET /fuel-prices/current`, `PUT /fuel-prices` |
+| | *Adicionados (fora do protótipo):* link **"Sair da conta"** no fim do Perfil e diálogo **"Como medir?"** explicando o cálculo do consumo médio; o app mostra a primeira moto do usuário | — |
 | **Histórico** | Lista "Ontem / 18/09/2026 — Lucro do dia" | `GET /analytics/daily` |
 | | "Iniciar expediente" (moto Flex pergunta o combustível) | `POST /shifts` |
 | **Home (sem expediente)** | "Sábado, 19 de Setembro", "Olá, {nome}" | data local + `GET /users/me` |
@@ -235,7 +236,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 1 | **Scaffold** | Projeto Compose na raiz deste repositório, *version catalog*, Hilt, ktlint, tema dos protótipos, navegação (auth + 3 abas vazias), `BuildConfig.API_BASE_URL` por build type, `network_security_config` do debug | App abre no emulador com as 3 abas e chama `/health` com sucesso | ✅ |
 | 2 | **Rede e sessão** | Retrofit/OkHttp/serialization, DTOs de todos os endpoints, `AuthInterceptor`, DataStore do token, `ApiError`, logout em 401; testes com `MockWebServer` | Testes de rede verdes | ✅ |
 | 3 | **Login e Cadastro** | Telas "Entre" e "Cadastre", validação local (senhas iguais, ≥ 8 caracteres), erros da API na tela, sessão persistida | Cadastro → login → abas; reabrir o app mantém logado | ✅ |
-| 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | |
+| 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | ✅ |
 | 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | |
 | 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `SyncWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | |
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | |
