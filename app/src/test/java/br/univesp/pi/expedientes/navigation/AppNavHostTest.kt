@@ -1,6 +1,7 @@
 package br.univesp.pi.expedientes.navigation
 
 import androidx.compose.material3.Text
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotSelected
 import androidx.compose.ui.test.assertIsSelected
@@ -9,7 +10,6 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
-import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -22,23 +22,37 @@ class AppNavHostTest {
     @get:Rule
     val composeRule = createComposeRule()
 
-    @Before
-    fun setUp() {
+    private val loggedIn = mutableStateOf(false)
+
+    private fun launch(isLoggedIn: Boolean) {
+        loggedIn.value = isLoggedIn
         composeRule.setContent {
             ExpedientesTheme {
-                AppNavHost(homeContent = { Text("conteudo da home") })
+                AppNavHost(isLoggedIn = loggedIn.value, homeContent = { Text("conteudo da home") })
             }
         }
     }
 
     @Test
-    fun startsOnLoginWithoutBottomBar() {
+    fun loggedOutStartsOnLoginWithoutBottomBar() {
+        launch(isLoggedIn = false)
+
         composeRule.onNodeWithText("Entre").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_Home").assertDoesNotExist()
     }
 
     @Test
+    fun loggedInStartsOnHome() {
+        launch(isLoggedIn = true)
+
+        composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
+        composeRule.onNodeWithTag("tab_Home").assertIsSelected()
+    }
+
+    @Test
     fun enterOpensHomeTab() {
+        launch(isLoggedIn = false)
+
         composeRule.onNodeWithText("Entrar").performClick()
 
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
@@ -48,7 +62,7 @@ class AppNavHostTest {
 
     @Test
     fun tabsSwitchScreens() {
-        composeRule.onNodeWithText("Entrar").performClick()
+        launch(isLoggedIn = true)
 
         composeRule.onNodeWithTag("tab_History").performClick()
         composeRule.onNodeWithTag("tab_History").assertIsSelected()
@@ -60,5 +74,17 @@ class AppNavHostTest {
 
         composeRule.onNodeWithTag("tab_Home").performClick()
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
+    }
+
+    @Test
+    fun logoutReturnsToLoginFromAnyTab() {
+        launch(isLoggedIn = true)
+        composeRule.onNodeWithTag("tab_Profile").performClick()
+
+        loggedIn.value = false
+        composeRule.waitForIdle()
+
+        composeRule.onNodeWithText("Entre").assertIsDisplayed()
+        composeRule.onNodeWithTag("tab_Home").assertDoesNotExist()
     }
 }

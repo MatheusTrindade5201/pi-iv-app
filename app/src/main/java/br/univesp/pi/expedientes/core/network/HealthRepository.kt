@@ -1,8 +1,6 @@
 package br.univesp.pi.expedientes.core.network
 
-import kotlinx.serialization.SerializationException
-import retrofit2.HttpException
-import java.io.IOException
+import br.univesp.pi.expedientes.core.network.api.HealthApi
 import javax.inject.Inject
 
 enum class ApiStatus {
@@ -20,13 +18,8 @@ class DefaultHealthRepository
         private val api: HealthApi,
     ) : HealthRepository {
         override suspend fun check(): ApiStatus =
-            try {
-                if (api.health().status == "ok") ApiStatus.Connected else ApiStatus.Unavailable
-            } catch (_: IOException) {
-                ApiStatus.Unavailable
-            } catch (_: HttpException) {
-                ApiStatus.Unavailable
-            } catch (_: SerializationException) {
-                ApiStatus.Unavailable
+            when (val result = apiCall { api.health() }) {
+                is ApiResult.Success -> if (result.value.status == "ok") ApiStatus.Connected else ApiStatus.Unavailable
+                else -> ApiStatus.Unavailable
             }
     }

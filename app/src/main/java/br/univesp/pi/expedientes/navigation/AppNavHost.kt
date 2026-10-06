@@ -13,7 +13,9 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
@@ -38,9 +40,19 @@ import br.univesp.pi.expedientes.feature.profile.ProfileScreen
 
 @Composable
 fun AppNavHost(
+    isLoggedIn: Boolean,
     navController: NavHostController = rememberNavController(),
     homeContent: @Composable () -> Unit = { HomeEntry() },
 ) {
+    val startDestination = remember { if (isLoggedIn) HomeRoute else LoginRoute }
+    LaunchedEffect(isLoggedIn) {
+        val onLogin = navController.currentDestination?.hasRoute(LoginRoute::class) == true
+        if (!isLoggedIn && !onLogin && navController.currentDestination != null) {
+            navController.navigate(LoginRoute) {
+                popUpTo(navController.graph.id) { inclusive = true }
+            }
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val currentTab = TopLevelDestination.entries.firstOrNull { currentDestination.isOn(it) }
@@ -59,7 +71,7 @@ fun AppNavHost(
     ) { padding ->
         NavHost(
             navController = navController,
-            startDestination = LoginRoute,
+            startDestination = startDestination,
             modifier = Modifier.padding(padding),
         ) {
             composable<LoginRoute> {

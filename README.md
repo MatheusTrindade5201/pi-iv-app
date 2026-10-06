@@ -12,7 +12,7 @@ univesp/
 
 ## Status
 
-Etapa 1 de 10 concluída (scaffold: tema, navegação, health check da API). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+Etapas 1–2 de 10 concluídas (scaffold; camada de rede com DTOs de todos os endpoints, sessão com token e logout automático em 401). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 
@@ -60,6 +60,10 @@ Documentação interativa da API: `http://localhost:8000/docs`.
 Para celular via USB: `adb reverse tcp:8000 tcp:8000` e, no `local.properties`, `api.baseUrl=http://localhost:8000/api/v1/`.
 
 HTTP sem TLS só é permitido no build **debug** e só para `10.0.2.2`, `localhost` e `127.0.0.1` (`app/src/debug/res/xml/network_security_config.xml`).
+
+## Contrato com a API
+
+`app/src/test/resources/api/*.json` são respostas reais da API, e o `ApiContractTest` garante que os DTOs do app as leem corretamente. Como regenerar: [`docs/app-plan.md` §6.1](docs/app-plan.md#61-atualizar-o-contrato-quando-a-api-mudar).
 
 ## CI
 

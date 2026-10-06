@@ -1,0 +1,24 @@
+{
+  "id": "76f9f491-dadc-4651-99e1-7aac46111fef",
+  "status": "in_progress",
+  "vehicle_id": "acda9c47-1b3a-49df-9adb-857d8e9f690e",
+  "fuel_id": "00000000-0000-4000-8000-000000000001",
+  "started_at": "2026-10-06T12:11:06.179964Z",
+  "ended_at": null,
+  "price_per_liter_used": "6.200",
+  "kml_used": "32.00",
+  "summary": {
+    "earnings_total": "0.00",
+    "fuel_cost": "0.00",
+    "profit": "0.00",
+    "distance_km": "0.000",
+    "duration_minutes": 0,
+    "idle_minutes": 0,
+    "profit_per_hour": null,
+    "profit_per_km": null
+  },
+  "gps": {
+    "last_point_at": null,
+    "gaps": []
+  }
+}

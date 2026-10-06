@@ -1,0 +1,40 @@
+{
+  "detail": [
+    {
+      "type": "string_too_short",
+      "loc": [
+        "body",
+        "name"
+      ],
+      "msg": "String should have at least 1 character",
+      "input": "",
+      "ctx": {
+        "min_length": 1
+      }
+    },
+    {
+      "type": "value_error",
+      "loc": [
+        "body",
+        "email"
+      ],
+      "msg": "value is not a valid email address: An email address must have an @-sign.",
+      "input": "nao-e-email",
+      "ctx": {
+        "reason": "An email address must have an @-sign."
+      }
+    },
+    {
+      "type": "string_too_short",
+      "loc": [
+        "body",
+        "password"
+      ],
+      "msg": "String should have at least 8 characters",
+      "input": "x",
+      "ctx": {
+        "min_length": 8
+      }
+    }
+  ]
+}

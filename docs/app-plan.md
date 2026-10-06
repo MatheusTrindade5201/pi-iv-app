@@ -205,9 +205,24 @@ Ponto mais delicado do app — e onde a API já foi preparada (lote, deduplicaç
 | Room | testes instrumentados com banco em memória | fila de pontos: inserir, pegar lote de 500, apagar após 202 |
 | UI | Compose UI Test | Login, lançar ganho, bottom sheet de encerrar |
 | Ponta a ponta (manual) | emulador + rota GPX + API local | roteiro da §8 |
+| Contrato | `ApiContractTest` + `app/src/test/resources/api/*.json` | Respostas **reais** da API (capturadas por `scripts/capture_api_fixtures.py`) desserializadas nos DTOs do app |
 | CI | GitHub Actions | `./gradlew lint ktlintCheck testDebugUnitTest assembleDebug` neste repositório (workflow próprio, independente do da API) |
 
 ---
+
+### 6.1 Atualizar o contrato quando a API mudar
+
+As fixtures em `app/src/test/resources/api/` são respostas reais do `pi-iv`. Se um endpoint mudar, regenere e rode os testes (o `ApiContractTest` aponta o que quebrou nos DTOs):
+
+```bash
+cd ../pi-iv && docker compose up -d db && cd api && uv run alembic upgrade head
+uv run fastapi run app/main.py --port 8776 &
+uv run python ../../pi-iv-app/scripts/capture_api_fixtures.py ../../pi-iv-app/app/src/test/resources/api
+kill %1
+cd ../../pi-iv-app && ./gradlew testDebugUnitTest
+```
+
+O script cria um usuário fictício (`fixture.app@example.com`), percorre todos os endpoints, troca o token real por um fictício e salva cada resposta; depois apague esse usuário do banco de desenvolvimento.
 
 ## 7. Etapas
 
@@ -217,7 +232,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 |---|---|---|---|---|
 | 0 | **Setup do ambiente** | Android Studio + SDK + AVD Google Play; API do `pi-iv` rodando e acessível do emulador; GPX de rota real em `docs/gps/` | Checklist da §2.4 completo | 🟡 falta clonar no Windows |
 | 1 | **Scaffold** | Projeto Compose na raiz deste repositório, *version catalog*, Hilt, ktlint, tema dos protótipos, navegação (auth + 3 abas vazias), `BuildConfig.API_BASE_URL` por build type, `network_security_config` do debug | App abre no emulador com as 3 abas e chama `/health` com sucesso | ✅ |
-| 2 | **Rede e sessão** | Retrofit/OkHttp/serialization, DTOs de todos os endpoints, `AuthInterceptor`, DataStore do token, `ApiError`, logout em 401; testes com `MockWebServer` | Testes de rede verdes | |
+| 2 | **Rede e sessão** | Retrofit/OkHttp/serialization, DTOs de todos os endpoints, `AuthInterceptor`, DataStore do token, `ApiError`, logout em 401; testes com `MockWebServer` | Testes de rede verdes | ✅ |
 | 3 | **Login e Cadastro** | Telas "Entre" e "Cadastre", validação local (senhas iguais, ≥ 8 caracteres), erros da API na tela, sessão persistida | Cadastro → login → abas; reabrir o app mantém logado | |
 | 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | |
 | 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | |

@@ -1,4 +1,4 @@
-package br.univesp.pi.expedientes.core.network
+package br.univesp.pi.expedientes.core.network.api
 
 import kotlinx.serialization.Serializable
 import retrofit2.http.GET

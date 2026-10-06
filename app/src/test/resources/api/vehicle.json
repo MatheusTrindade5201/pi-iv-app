@@ -1,0 +1,10 @@
+{
+  "id": "acda9c47-1b3a-49df-9adb-857d8e9f690e",
+  "model": "Honda CG 160",
+  "fuel_id": "00000000-0000-4000-8000-000000000001",
+  "fuel_name": "Gasolina",
+  "declared_kml": "32.00",
+  "displacement_cc": 160,
+  "year": 2022,
+  "created_at": "2026-10-06T12:11:06.094219Z"
+}

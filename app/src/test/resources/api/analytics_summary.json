@@ -1,0 +1,15 @@
+{
+  "shifts_count": 1,
+  "earnings_total": "20.00",
+  "fuel_cost": "1.36",
+  "profit": "18.64",
+  "distance_km": "5.496",
+  "duration_minutes": 240,
+  "idle_minutes": 20,
+  "from": "2026-09-07",
+  "to": "2026-10-06",
+  "days_worked": 1,
+  "profit_per_hour": "4.66",
+  "profit_per_km": "3.39",
+  "avg_profit_per_day": "18.64"
+}

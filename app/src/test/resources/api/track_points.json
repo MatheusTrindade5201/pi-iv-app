@@ -1,0 +1,37 @@
+[
+  {
+    "recorded_at": "2026-10-06T08:16:06.208917Z",
+    "latitude": "-23.550520",
+    "longitude": "-46.633308",
+    "accuracy_m": "8.50",
+    "speed_ms": "9.10"
+  },
+  {
+    "recorded_at": "2026-10-06T08:31:06.208917Z",
+    "latitude": "-23.561414",
+    "longitude": "-46.655881",
+    "accuracy_m": "8.50",
+    "speed_ms": "9.10"
+  },
+  {
+    "recorded_at": "2026-10-06T08:41:06.208917Z",
+    "latitude": "-23.561420",
+    "longitude": "-46.655890",
+    "accuracy_m": "8.50",
+    "speed_ms": "9.10"
+  },
+  {
+    "recorded_at": "2026-10-06T09:11:06.208917Z",
+    "latitude": "-23.587416",
+    "longitude": "-46.657634",
+    "accuracy_m": "8.50",
+    "speed_ms": "9.10"
+  },
+  {
+    "recorded_at": "2026-10-06T09:21:06.208917Z",
+    "latitude": "-23.587420",
+    "longitude": "-46.657640",
+    "accuracy_m": "8.50",
+    "speed_ms": "9.10"
+  }
+]
