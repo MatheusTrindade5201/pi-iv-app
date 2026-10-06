@@ -15,6 +15,7 @@ import br.univesp.pi.expedientes.core.network.api.DailyTotals
 import br.univesp.pi.expedientes.core.network.api.FuelIds
 import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
+import br.univesp.pi.expedientes.feature.tracking.PermissionPrompt
 import br.univesp.pi.expedientes.testing.Fixtures
 import org.junit.Assert.assertEquals
 import org.junit.Rule
@@ -121,6 +122,57 @@ class HomeScreenTest {
         composeRule.onNodeWithText("Lucro Parcial").assertIsDisplayed()
         composeRule.onNodeWithTag("partial_profit").assertIsDisplayed()
         composeRule.onNodeWithText("+R$ 18,64").assertIsDisplayed()
+        composeRule.onNodeWithTag("gps_active").assertDoesNotExist()
+    }
+
+    @Test
+    fun inProgressShowsGpsActive() {
+        val shift = ApiJson.decodeFromString(ShiftResponse.serializer(), Fixtures.read("shift_current"))
+        show(HomeUiState(today = today, content = HomeContent.InProgress("John Doe", shift), gpsActive = true))
+
+        composeRule.onNodeWithText("GPS ativo").assertIsDisplayed()
+    }
+
+    private fun showPermission(prompt: PermissionPrompt): () -> Int {
+        var prompts = 0
+        var starts = 0
+        composeRule.setContent {
+            ExpedientesTheme {
+                HomeScreen(
+                    state = HomeUiState(today = today, content = HomeContent.Idle("John", null)),
+                    actions = actions,
+                    onOpenProfile = {},
+                    onStartClick = { starts++ },
+                    permissionPrompt = prompt,
+                    onPermissionAction = { prompts++ },
+                )
+            }
+        }
+        composeRule.onNodeWithTag("start_shift").performClick()
+        assertEquals(1, starts)
+        return { prompts }
+    }
+
+    @Test
+    fun deniedPermissionAsksAgain() {
+        val count = showPermission(PermissionPrompt.Ask)
+
+        composeRule
+            .onNodeWithText("Permita a localização para registrar o trajeto e calcular km e combustível.")
+            .assertIsDisplayed()
+        composeRule.onNodeWithText("Permitir").performClick()
+
+        assertEquals(1, count())
+        assertEquals(emptyList<String>(), calls)
+    }
+
+    @Test
+    fun permanentlyDeniedPermissionOpensSettings() {
+        val count = showPermission(PermissionPrompt.OpenSettings)
+
+        composeRule.onNodeWithText("Abrir configurações").performClick()
+
+        assertEquals(1, count())
     }
 
     @Test

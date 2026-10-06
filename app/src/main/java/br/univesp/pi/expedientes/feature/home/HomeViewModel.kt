@@ -8,6 +8,8 @@ import br.univesp.pi.expedientes.core.network.api.DailyTotals
 import br.univesp.pi.expedientes.core.network.api.FuelIds
 import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.network.failureOrNull
+import br.univesp.pi.expedientes.feature.tracking.TrackingController
+import br.univesp.pi.expedientes.feature.tracking.TrackingStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -59,6 +61,7 @@ data class HomeUiState(
     val today: LocalDate,
     val content: HomeContent = HomeContent.Loading,
     val startFlow: StartFlow = StartFlow.None,
+    val gpsActive: Boolean = false,
 ) {
     val isStarting: Boolean
         get() = startFlow == StartFlow.Checking || (startFlow as? StartFlow.ChooseFuel)?.isStarting == true
@@ -82,6 +85,8 @@ class HomeViewModel
     constructor(
         private val repository: HomeRepository,
         private val clock: Clock,
+        private val tracking: TrackingController,
+        trackingStatus: TrackingStatus,
     ) : ViewModel(),
         HomeActions {
         private val _state = MutableStateFlow(HomeUiState(today = LocalDate.now(clock)))
@@ -90,6 +95,9 @@ class HomeViewModel
 
         init {
             load()
+            viewModelScope.launch {
+                trackingStatus.isRunning.collect { running -> _state.update { it.copy(gpsActive = running) } }
+            }
         }
 
         override fun retry() {
@@ -114,6 +122,7 @@ class HomeViewModel
                     }
                 _state.update { it.copy(today = LocalDate.now(clock), content = content) }
                 loading = false
+                if (content is HomeContent.InProgress) tracking.ensureRunning(content.shift.id)
                 afterLoad(content)
             }
         }
@@ -158,10 +167,12 @@ class HomeViewModel
         ) {
             val result = repository.startShift(vehicleId, fuelId)
             when {
-                result is ApiResult.Success ->
+                result is ApiResult.Success -> {
                     _state.update {
                         it.copy(content = HomeContent.InProgress(userName(), result.value), startFlow = StartFlow.None)
                     }
+                    tracking.start(result.value.id)
+                }
                 result is ApiResult.HttpError && result.code == 409 -> {
                     val failure = RequestFailure.Api(result.code, result.message)
                     load { content ->

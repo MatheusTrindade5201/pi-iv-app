@@ -1,5 +1,12 @@
 package br.univesp.pi.expedientes.feature.home
 
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.provider.Settings
+import androidx.activity.compose.LocalActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -22,15 +30,20 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.univesp.pi.expedientes.R
@@ -52,6 +65,9 @@ import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
 import br.univesp.pi.expedientes.core.ui.components.SectionCard
 import br.univesp.pi.expedientes.core.ui.components.text
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
+import br.univesp.pi.expedientes.feature.tracking.LocationPermissions
+import br.univesp.pi.expedientes.feature.tracking.PermissionPrompt
+import br.univesp.pi.expedientes.feature.tracking.permissionPromptAfterDenial
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -61,8 +77,53 @@ fun HomeEntry(
     viewModel: HomeViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+    val activity = LocalActivity.current
+    var prompt by remember { mutableStateOf<PermissionPrompt?>(null) }
+    val launcher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+            if (result[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
+                prompt = null
+                viewModel.startShift()
+            } else {
+                val rationale =
+                    activity?.let {
+                        ActivityCompat.shouldShowRequestPermissionRationale(
+                            it,
+                            Manifest.permission.ACCESS_FINE_LOCATION,
+                        )
+                    } == true
+                prompt = permissionPromptAfterDenial(rationale)
+            }
+        }
     LaunchedEffect(Unit) { viewModel.refresh() }
-    HomeScreen(state = state, actions = viewModel, onOpenProfile = onOpenProfile)
+    HomeScreen(
+        state = state,
+        actions = viewModel,
+        onOpenProfile = onOpenProfile,
+        onStartClick = {
+            if (LocationPermissions.hasPreciseLocation(context)) {
+                prompt = null
+                viewModel.startShift()
+            } else {
+                launcher.launch(LocationPermissions.requested)
+            }
+        },
+        permissionPrompt = prompt,
+        onPermissionAction = {
+            when (prompt) {
+                PermissionPrompt.Ask -> launcher.launch(LocationPermissions.requested)
+                PermissionPrompt.OpenSettings ->
+                    context.startActivity(
+                        Intent(
+                            Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                            Uri.fromParts("package", context.packageName, null),
+                        ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                    )
+                null -> Unit
+            }
+        },
+    )
     StartShiftDialogs(state = state.startFlow, actions = viewModel, onOpenProfile = onOpenProfile)
 }
 
@@ -72,6 +133,9 @@ fun HomeScreen(
     actions: HomeActions,
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    onStartClick: () -> Unit = actions::startShift,
+    permissionPrompt: PermissionPrompt? = null,
+    onPermissionAction: () -> Unit = {},
 ) {
     when (val content = state.content) {
         HomeContent.Loading ->
@@ -79,8 +143,9 @@ fun HomeScreen(
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         is HomeContent.Failed -> FailedHome(content.failure, actions::retry, modifier)
-        is HomeContent.Idle -> IdleHome(state, content, actions, onOpenProfile, modifier)
-        is HomeContent.InProgress -> InProgressHome(content.shift, modifier)
+        is HomeContent.Idle ->
+            IdleHome(state, content, onStartClick, onOpenProfile, permissionPrompt, onPermissionAction, modifier)
+        is HomeContent.InProgress -> InProgressHome(content.shift, state.gpsActive, modifier)
     }
 }
 
@@ -103,8 +168,10 @@ private fun FailedHome(
 private fun IdleHome(
     state: HomeUiState,
     content: HomeContent.Idle,
-    actions: HomeActions,
+    onStartClick: () -> Unit,
     onOpenProfile: () -> Unit,
+    permissionPrompt: PermissionPrompt?,
+    onPermissionAction: () -> Unit,
     modifier: Modifier,
 ) {
     Column(modifier = modifier.fillMaxSize().padding(horizontal = 20.dp)) {
@@ -126,9 +193,10 @@ private fun IdleHome(
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             StartShiftError(state.startFlow, onOpenProfile)
+            permissionPrompt?.let { PermissionMessage(it, onPermissionAction) }
             PrimaryButton(
                 text = stringResource(R.string.home_start_shift),
-                onClick = actions::startShift,
+                onClick = onStartClick,
                 loading = state.isStarting,
                 leadingIcon = { Icon(painterResource(R.drawable.ic_play), contentDescription = null) },
                 modifier = Modifier.fillMaxWidth().testTag("start_shift"),
@@ -181,6 +249,7 @@ private fun LastRecordCard(
 @Composable
 private fun InProgressHome(
     shift: ShiftResponse,
+    gpsActive: Boolean,
     modifier: Modifier,
 ) {
     Column(
@@ -204,6 +273,19 @@ private fun InProgressHome(
                 text = formatDuration(shift.summary.durationMinutes),
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+            )
+        }
+        if (gpsActive) {
+            Text(
+                text = stringResource(R.string.home_gps_active),
+                color = ExpedientesTheme.colors.positive,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .background(ExpedientesTheme.colors.positiveContainer, RoundedCornerShape(8.dp))
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .testTag("gps_active"),
             )
         }
         SectionCard {
@@ -299,6 +381,35 @@ private fun StartShiftError(
             TextButton(onClick = onOpenProfile) {
                 Text(stringResource(R.string.home_go_profile), color = MaterialTheme.colorScheme.primary)
             }
+        }
+    }
+}
+
+@Composable
+private fun PermissionMessage(
+    prompt: PermissionPrompt,
+    onAction: () -> Unit,
+) {
+    Column(modifier = Modifier.testTag("permission_prompt")) {
+        Text(
+            text = stringResource(R.string.permission_location_needed),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        TextButton(onClick = onAction) {
+            Text(
+                text =
+                    stringResource(
+                        if (prompt ==
+                            PermissionPrompt.Ask
+                        ) {
+                            R.string.permission_allow
+                        } else {
+                            R.string.permission_open_settings
+                        },
+                    ),
+                color = MaterialTheme.colorScheme.primary,
+            )
         }
     }
 }

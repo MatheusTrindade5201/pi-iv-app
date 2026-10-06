@@ -8,6 +8,8 @@ import br.univesp.pi.expedientes.core.network.api.DailyTotals
 import br.univesp.pi.expedientes.core.network.api.FuelIds
 import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.network.api.VehicleResponse
+import br.univesp.pi.expedientes.feature.tracking.TrackingStatus
+import br.univesp.pi.expedientes.testing.FakeTrackingController
 import br.univesp.pi.expedientes.testing.Fixtures
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -65,10 +67,12 @@ class HomeViewModelTest {
     }
 
     private val repository = FakeHomeRepository()
+    private val tracking = FakeTrackingController()
+    private val trackingStatus = TrackingStatus()
     private val idle get() = ApiResult.Success(HomeData("John Doe", null, lastDay))
 
     private fun TestScope.viewModel(): HomeViewModel {
-        val viewModel = HomeViewModel(repository, clock)
+        val viewModel = HomeViewModel(repository, clock, tracking, trackingStatus)
         advanceUntilIdle()
         return viewModel
     }
@@ -233,5 +237,57 @@ class HomeViewModelTest {
             advanceUntilIdle()
 
             assertEquals(1, repository.starts.size)
+        }
+
+    @Test
+    fun startedShiftStartsTracking() =
+        runTest(mainDispatcherRule.dispatcher) {
+            repository.loads += idle
+            repository.vehicle = ApiResult.Success(vehicle(FuelIds.GASOLINE))
+            repository.start = ApiResult.Success(shift)
+            val viewModel = viewModel()
+            assertTrue(tracking.calls.isEmpty())
+
+            viewModel.startShift()
+            advanceUntilIdle()
+
+            assertEquals(listOf("start:${shift.id}"), tracking.calls)
+        }
+
+    @Test
+    fun failedStartDoesNotTrack() =
+        runTest(mainDispatcherRule.dispatcher) {
+            repository.loads += idle
+            repository.vehicle = ApiResult.Success(vehicle(FuelIds.GASOLINE))
+            repository.start = ApiResult.NetworkError
+            val viewModel = viewModel()
+
+            viewModel.startShift()
+            advanceUntilIdle()
+
+            assertTrue(tracking.calls.isEmpty())
+        }
+
+    @Test
+    fun openingWithShiftInProgressResumesTracking() =
+        runTest(mainDispatcherRule.dispatcher) {
+            repository.loads += ApiResult.Success(HomeData("John Doe", shift, lastDay))
+
+            viewModel()
+
+            assertEquals(listOf("ensure:${shift.id}"), tracking.calls)
+        }
+
+    @Test
+    fun gpsIndicatorFollowsTrackingStatus() =
+        runTest(mainDispatcherRule.dispatcher) {
+            repository.loads += idle
+            val viewModel = viewModel()
+            assertEquals(false, viewModel.state.value.gpsActive)
+
+            trackingStatus.running(true)
+            advanceUntilIdle()
+
+            assertEquals(true, viewModel.state.value.gpsActive)
         }
 }

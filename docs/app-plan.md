@@ -193,9 +193,19 @@ Ponto mais delicado do app — e onde a API já foi preparada (lote, deduplicaç
 1. **Permissões:** `ACCESS_FINE_LOCATION` (em uso), `POST_NOTIFICATIONS` (Android 13+), `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_LOCATION` (Android 14+). Como a coleta roda num *foreground service* iniciado com o app aberto, **não** é preciso localização em segundo plano (`ACCESS_BACKGROUND_LOCATION`), o que simplifica a aprovação.
 2. **Coleta:** `LocationRequest` de alta precisão a cada **5–10 s**; cada leitura vira um ponto (`recorded_at` = horário do fix com fuso, lat/long, `accuracy_m`, `speed_ms`) gravado no **Room**.
 3. **Envio:** a cada ~30 s ou 50 pontos, o app manda até 500 pontos pendentes. Pontos são apagados da fila **só depois** do 202. Se a resposta se perder, o reenvio é seguro: a API conta como `duplicated`.
-4. **Sem internet:** a fila cresce no Room; o `SyncWorker` (WorkManager, restrição de rede) esvazia quando a conexão volta.
+4. **Sem internet:** a fila cresce no Room; o `UploadWorker` (WorkManager, restrição de rede, backoff exponencial) esvazia quando a conexão volta. Respostas 404/409/422 descartam o lote (expediente encerrado ou inexistente — reenviar travaria a fila); 401 para o envio (a sessão cai sozinha).
 5. **Encerrar:** antes do `POST /finish`, o app força um último envio da fila para o resumo final considerar todos os pontos.
-6. **App morto / celular reiniciado:** ao abrir, se `GET /shifts/current` devolver um expediente, o app religa o serviço.
+6. **App morto / celular reiniciado:** ao abrir, se `GET /shifts/current` devolver um expediente, o app religa o serviço. Se o sistema matar e recriar o serviço (`START_STICKY`), ele retoma o expediente salvo localmente.
+7. **Sair da conta:** para o serviço e limpa a fila.
+
+### 5.1 Como testar no emulador (etapa 6)
+
+1. API rodando; no app, entrar, cadastrar moto e preço, tocar **Iniciar expediente** → aceitar localização e notificações → aparece a notificação fixa "Expediente em andamento" e "GPS ativo" na Home.
+2. *Extended controls → Location → Routes → Import GPX* → [`docs/gps/rota-sp.gpx`](gps/rota-sp.gpx) (Sé → Liberdade → Consolação → MASP → Paraíso → Vila Mariana, 7,8 km, ~20 min, paradas de 2–3 min) → *Play route* a 2×.
+3. Swagger: `GET /shifts/{id}/track-points` cresce a cada ~30 s.
+4. Desligar o Wi-Fi/dados do emulador por 2 min e religar → os pontos do intervalo chegam, sem duplicar.
+5. Fechar o app à força (deslizar nos recentes) e reabrir → o rastreamento retoma.
+6. Negar a permissão → mensagem com **Permitir**; negar de vez → **Abrir configurações**.
 
 ---
 
@@ -239,7 +249,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 3 | **Login e Cadastro** | Telas "Entre" e "Cadastre", validação local (senhas iguais, ≥ 8 caracteres), erros da API na tela, sessão persistida | Cadastro → login → abas; reabrir o app mantém logado | ✅ |
 | 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | ✅ |
 | 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | ✅ (Home; botão do Histórico na etapa 8) |
-| 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `SyncWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | |
+| 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `UploadWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | ✅ |
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | |
 | 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | |
 | 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | |

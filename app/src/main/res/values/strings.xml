@@ -55,6 +55,15 @@
   <string name="home_choose_fuel_hint">Sua moto é Flex: o custo do expediente usa o preço do combustível escolhido.</string>
   <string name="cancel">Cancelar</string>
 
+  <string name="tracking_channel_name">Expediente em andamento</string>
+  <string name="tracking_channel_description">Aviso fixo enquanto o trajeto do expediente é registrado</string>
+  <string name="tracking_notification_title">Expediente em andamento</string>
+  <string name="tracking_notification_text">Registrando o trajeto pelo GPS</string>
+  <string name="home_gps_active">GPS ativo</string>
+  <string name="permission_location_needed">Permita a localização para registrar o trajeto e calcular km e combustível.</string>
+  <string name="permission_allow">Permitir</string>
+  <string name="permission_open_settings">Abrir configurações</string>
+
   <string name="history_title">Histórico</string>
   <string name="profile_title">Perfil</string>
   <string name="profile_name">Nome</string>
