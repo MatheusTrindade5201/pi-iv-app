@@ -5,6 +5,7 @@ import br.univesp.pi.expedientes.feature.tracking.data.FlushResult
 
 class FakeTrackingController : TrackingController {
     val calls = mutableListOf<String>()
+    var flushResult = FlushResult.Done
 
     override suspend fun start(shiftId: String) {
         calls += "start:$shiftId"
@@ -20,7 +21,7 @@ class FakeTrackingController : TrackingController {
 
     override suspend fun flushNow(): FlushResult {
         calls += "flush"
-        return FlushResult.Done
+        return flushResult
     }
 
     override suspend fun clearPending() {

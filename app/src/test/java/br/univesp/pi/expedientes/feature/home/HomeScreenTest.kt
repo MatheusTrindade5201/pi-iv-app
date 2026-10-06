@@ -1,17 +1,17 @@
 package br.univesp.pi.expedientes.feature.home
 
-import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.createComposeRule
-import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import br.univesp.pi.expedientes.core.network.ApiJson
 import br.univesp.pi.expedientes.core.network.RequestFailure
 import br.univesp.pi.expedientes.core.network.api.DailyTotals
+import br.univesp.pi.expedientes.core.network.api.EarningResponse
 import br.univesp.pi.expedientes.core.network.api.FuelIds
 import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
@@ -24,6 +24,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.GraphicsMode
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 
 @RunWith(RobolectricTestRunner::class)
@@ -56,7 +57,65 @@ class HomeScreenTest {
             }
         }
 
+    private val shiftActions =
+        object : ShiftActions {
+            override fun openEarning() {
+                calls += "openEarning"
+            }
+
+            override fun changeEarning(text: String) {
+                calls += "change:$text"
+            }
+
+            override fun choosePreset(value: BigDecimal) {
+                calls += "preset:$value"
+            }
+
+            override fun addEarning() {
+                calls += "add"
+            }
+
+            override fun overwriteEarning() {
+                calls += "overwrite"
+            }
+
+            override fun dismissEarning() {
+                calls += "dismissEarning"
+            }
+
+            override fun openFinish() {
+                calls += "openFinish"
+            }
+
+            override fun confirmFinish() {
+                calls += "confirmFinish"
+            }
+
+            override fun dismissFinish() {
+                calls += "continue"
+            }
+
+            override fun resumeTracking() {
+                calls += "resume"
+            }
+        }
+
     private val today = LocalDate.of(2026, 9, 19)
+    private val shift = ApiJson.decodeFromString(ShiftResponse.serializer(), Fixtures.read("shift_current"))
+    private val lastPoint = shift.gps.lastPointAt!!
+    private val prototypeShift =
+        shift.copy(
+            summary =
+                shift.summary.copy(
+                    earningsTotal = BigDecimal("245.00"),
+                    fuelCost = BigDecimal("57.60"),
+                    profit = BigDecimal("187.40"),
+                    distanceKm = BigDecimal("78.200"),
+                    durationMinutes = 240,
+                    profitPerHour = BigDecimal("46.85"),
+                    profitPerKm = BigDecimal("2.39"),
+                ),
+        )
     private val prototypeDay =
         DailyTotals(
             date = LocalDate.of(2026, 9, 18),
@@ -72,14 +131,20 @@ class HomeScreenTest {
     private fun show(
         state: HomeUiState,
         onOpenProfile: () -> Unit = {},
+        now: Instant = lastPoint.plusSeconds(4),
     ) {
         composeRule.setContent {
             ExpedientesTheme {
-                HomeScreen(state, actions, onOpenProfile)
+                HomeScreen(state, actions, shiftActions, now, onOpenProfile)
                 StartShiftDialogs(state.startFlow, actions, onOpenProfile)
             }
         }
     }
+
+    private fun inProgress(
+        gpsActive: Boolean = true,
+        shift: ShiftResponse = prototypeShift,
+    ) = HomeUiState(today = today, content = HomeContent.InProgress("John Doe", shift), gpsActive = gpsActive)
 
     @Test
     fun idleMatchesPrototype() {
@@ -113,24 +178,142 @@ class HomeScreenTest {
     }
 
     @Test
-    fun inProgressShowsPartialProfit() {
-        val shift = ApiJson.decodeFromString(ShiftResponse.serializer(), Fixtures.read("shift_current"))
-        show(HomeUiState(today = today, content = HomeContent.InProgress("John Doe", shift)))
+    fun inProgressMatchesPrototype() {
+        show(inProgress(), now = shift.startedAt.plusSeconds(222 * 60))
 
-        composeRule.onNodeWithText("Expediente em andamento").assertIsDisplayed()
-        composeRule.onAllNodesWithText("4h").assertCountEquals(2)
-        composeRule.onNodeWithText("Lucro Parcial").assertIsDisplayed()
-        composeRule.onNodeWithTag("partial_profit").assertIsDisplayed()
-        composeRule.onNodeWithText("+R$ 18,64").assertIsDisplayed()
-        composeRule.onNodeWithTag("gps_active").assertDoesNotExist()
+        listOf(
+            "Expediente em andamento",
+            "Lucro Parcial",
+            "+R$ 187,40",
+            "R$ 245,00",
+            "R$ 57,60",
+            "78,2",
+            "4h",
+            "R$ 46,85",
+            "2,39",
+            "Lançar ganho",
+            "Encerrar Expediente",
+        ).forEach { composeRule.onNodeWithText(it).assertIsDisplayed() }
+
+        composeRule.onNodeWithTag("open_earning").performClick()
+        composeRule.onNodeWithTag("open_finish").performClick()
+        assertEquals(listOf("openEarning", "openFinish"), calls)
     }
 
     @Test
-    fun inProgressShowsGpsActive() {
-        val shift = ApiJson.decodeFromString(ShiftResponse.serializer(), Fixtures.read("shift_current"))
-        show(HomeUiState(today = today, content = HomeContent.InProgress("John Doe", shift), gpsActive = true))
+    fun elapsedTimeFollowsTheClock() {
+        show(inProgress(), now = shift.startedAt.plusSeconds(222 * 60 + 30))
 
-        composeRule.onNodeWithText("GPS ativo").assertIsDisplayed()
+        composeRule.onNodeWithTag("elapsed").assertTextEquals("3h 42min")
+    }
+
+    @Test
+    fun gpsActiveBannerShowsSecondsSinceLastPoint() {
+        show(inProgress())
+
+        composeRule.onNodeWithText("GPS ativo - último ponto há 4s").assertIsDisplayed()
+        composeRule.onNodeWithText("Ativar").assertDoesNotExist()
+    }
+
+    @Test
+    fun gpsWaitingForFirstPoint() {
+        show(inProgress(shift = shift.copy(gps = shift.gps.copy(lastPointAt = null))))
+
+        composeRule.onNodeWithText("GPS ativo - aguardando sinal").assertIsDisplayed()
+    }
+
+    @Test
+    fun gpsOffOffersToResume() {
+        show(inProgress(gpsActive = false), now = lastPoint.plusSeconds(6 * 60))
+
+        composeRule.onNodeWithText("GPS inativo - último ponto há 6 min").assertIsDisplayed()
+        composeRule.onNodeWithText("Ativar").performClick()
+
+        assertEquals(listOf("resume"), calls)
+    }
+
+    @Test
+    fun earningForm() {
+        composeRule.setContent {
+            ExpedientesTheme {
+                EarningForm(EarningFlow(text = "20,00", lastEarning = null), shiftActions)
+            }
+        }
+
+        composeRule.onNodeWithTag("earning_amount").assertTextEquals("R$ 20,00")
+        composeRule.onNodeWithTag("chip_20").assertIsSelected()
+        composeRule.onNodeWithTag("overwrite_earning").assertIsNotEnabled()
+        composeRule.onNodeWithText("R$ 5,00").performClick()
+        composeRule.onNodeWithTag("add_earning").performClick()
+
+        assertEquals(listOf("preset:5", "add"), calls)
+    }
+
+    @Test
+    fun earningFormWithLastEarningAllowsOverwrite() {
+        val last = ApiJson.decodeFromString(EarningResponse.serializer(), Fixtures.read("earning"))
+        composeRule.setContent {
+            ExpedientesTheme {
+                EarningForm(EarningFlow(text = "8", lastEarning = last), shiftActions)
+            }
+        }
+
+        composeRule.onNodeWithText("Último lançado: R$ 20,00").assertIsDisplayed()
+        composeRule.onNodeWithTag("chip_8").assertIsSelected()
+        composeRule.onNodeWithTag("overwrite_earning").performClick()
+
+        assertEquals(listOf("overwrite"), calls)
+    }
+
+    @Test
+    fun emptyEarningCannotBeSent() {
+        composeRule.setContent {
+            ExpedientesTheme { EarningForm(EarningFlow(), shiftActions) }
+        }
+
+        composeRule.onNodeWithTag("earning_amount").assertTextEquals("R$ 0,00")
+        composeRule.onNodeWithTag("add_earning").assertIsNotEnabled()
+    }
+
+    @Test
+    fun finishFormMatchesPrototype() {
+        composeRule.setContent {
+            ExpedientesTheme {
+                FinishForm(
+                    FinishFlow(),
+                    prototypeShift,
+                    elapsedMinutes = 222,
+                    inactiveMinutes = 6,
+                    actions = shiftActions,
+                )
+            }
+        }
+
+        listOf("Encerrar expediente", "Tempo percorrido", "3h 42min", "GPS ficou inativo por 6 min", "+R$ 187,40")
+            .forEach { composeRule.onNodeWithText(it).assertIsDisplayed() }
+        composeRule.onNodeWithText("Continuar").performClick()
+        composeRule.onNodeWithTag("confirm_finish").performClick()
+
+        assertEquals(listOf("continue", "confirmFinish"), calls)
+    }
+
+    @Test
+    fun finishFormWithoutGapsOrWhileFinishing() {
+        composeRule.setContent {
+            ExpedientesTheme {
+                FinishForm(
+                    FinishFlow(finishing = true, failure = RequestFailure.Network),
+                    prototypeShift,
+                    elapsedMinutes = 10,
+                    inactiveMinutes = 0,
+                    actions = shiftActions,
+                )
+            }
+        }
+
+        composeRule.onNodeWithTag("gps_gap").assertDoesNotExist()
+        composeRule.onNodeWithTag("confirm_finish").assertIsNotEnabled()
+        composeRule.onNodeWithText("Continuar").assertIsNotEnabled()
     }
 
     private fun showPermission(prompt: PermissionPrompt): () -> Int {
@@ -141,6 +324,8 @@ class HomeScreenTest {
                 HomeScreen(
                     state = HomeUiState(today = today, content = HomeContent.Idle("John", null)),
                     actions = actions,
+                    shiftActions = shiftActions,
+                    now = Instant.EPOCH,
                     onOpenProfile = {},
                     onStartClick = { starts++ },
                     permissionPrompt = prompt,

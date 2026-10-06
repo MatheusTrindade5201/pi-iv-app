@@ -144,6 +144,7 @@ fun ChoiceChips(
     onSelect: (String) -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
+    compact: Boolean = false,
 ) {
     Row(
         modifier = modifier.fillMaxWidth(),
@@ -175,10 +176,14 @@ fun ChoiceChips(
                             role = Role.RadioButton,
                             onClick = { onSelect(id) },
                         ).testTag("chip_$id")
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                contentAlignment = Alignment.CenterStart,
+                        .padding(horizontal = if (compact) 4.dp else 16.dp, vertical = 14.dp),
+                contentAlignment = if (compact) Alignment.Center else Alignment.CenterStart,
             ) {
-                Text(text = label, style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    text = label,
+                    style = if (compact) MaterialTheme.typography.bodyMedium else MaterialTheme.typography.bodyLarge,
+                    maxLines = 1,
+                )
             }
         }
     }

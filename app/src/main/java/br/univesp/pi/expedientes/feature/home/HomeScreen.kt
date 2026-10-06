@@ -7,7 +7,6 @@ import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,10 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -31,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -45,7 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import br.univesp.pi.expedientes.R
 import br.univesp.pi.expedientes.core.format.DayLabel
 import br.univesp.pi.expedientes.core.format.formatAmount
@@ -59,7 +59,6 @@ import br.univesp.pi.expedientes.core.format.perKm
 import br.univesp.pi.expedientes.core.format.relativeDay
 import br.univesp.pi.expedientes.core.network.RequestFailure
 import br.univesp.pi.expedientes.core.network.api.DailyTotals
-import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.ui.components.DetailList
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
 import br.univesp.pi.expedientes.core.ui.components.SectionCard
@@ -68,7 +67,9 @@ import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 import br.univesp.pi.expedientes.feature.tracking.LocationPermissions
 import br.univesp.pi.expedientes.feature.tracking.PermissionPrompt
 import br.univesp.pi.expedientes.feature.tracking.permissionPromptAfterDenial
+import kotlinx.coroutines.delay
 import java.math.BigDecimal
+import java.time.Instant
 import java.time.LocalDate
 
 @Composable
@@ -80,11 +81,29 @@ fun HomeEntry(
     val context = LocalContext.current
     val activity = LocalActivity.current
     var prompt by remember { mutableStateOf<PermissionPrompt?>(null) }
+    val inProgress = state.content is HomeContent.InProgress
+    val now by produceState(Instant.now()) {
+        while (true) {
+            delay(TICK_MS)
+            value = Instant.now()
+        }
+    }
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    LaunchedEffect(inProgress) {
+        if (inProgress) {
+            lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    delay(REFRESH_MS)
+                    viewModel.refresh()
+                }
+            }
+        }
+    }
     val launcher =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
             if (result[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
                 prompt = null
-                viewModel.startShift()
+                if (inProgress) viewModel.resumeTracking() else viewModel.startShift()
             } else {
                 val rationale =
                     activity?.let {
@@ -100,7 +119,16 @@ fun HomeEntry(
     HomeScreen(
         state = state,
         actions = viewModel,
+        shiftActions = viewModel,
+        now = now,
         onOpenProfile = onOpenProfile,
+        onResumeGps = {
+            if (LocationPermissions.hasPreciseLocation(context)) {
+                viewModel.resumeTracking()
+            } else {
+                launcher.launch(LocationPermissions.requested)
+            }
+        },
         onStartClick = {
             if (LocationPermissions.hasPreciseLocation(context)) {
                 prompt = null
@@ -125,14 +153,21 @@ fun HomeEntry(
         },
     )
     StartShiftDialogs(state = state.startFlow, actions = viewModel, onOpenProfile = onOpenProfile)
+    ShiftSheets(state = state, now = now, actions = viewModel)
 }
+
+private const val TICK_MS = 1_000L
+private const val REFRESH_MS = 30_000L
 
 @Composable
 fun HomeScreen(
     state: HomeUiState,
     actions: HomeActions,
+    shiftActions: ShiftActions,
+    now: Instant,
     onOpenProfile: () -> Unit,
     modifier: Modifier = Modifier,
+    onResumeGps: () -> Unit = shiftActions::resumeTracking,
     onStartClick: () -> Unit = actions::startShift,
     permissionPrompt: PermissionPrompt? = null,
     onPermissionAction: () -> Unit = {},
@@ -145,7 +180,7 @@ fun HomeScreen(
         is HomeContent.Failed -> FailedHome(content.failure, actions::retry, modifier)
         is HomeContent.Idle ->
             IdleHome(state, content, onStartClick, onOpenProfile, permissionPrompt, onPermissionAction, modifier)
-        is HomeContent.InProgress -> InProgressHome(content.shift, state.gpsActive, modifier)
+        is HomeContent.InProgress -> InProgressHome(state, content.shift, now, shiftActions, onResumeGps, modifier)
     }
 }
 
@@ -243,71 +278,6 @@ private fun LastRecordCard(
             hourly = perHour(day.profit, day.durationMinutes),
             perKmValue = perKm(day.profit, day.distanceKm),
         )
-    }
-}
-
-@Composable
-private fun InProgressHome(
-    shift: ShiftResponse,
-    gpsActive: Boolean,
-    modifier: Modifier,
-) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-    ) {
-        Spacer(Modifier.height(8.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(10.dp).background(ExpedientesTheme.colors.positive, CircleShape))
-            Text(
-                text = stringResource(R.string.home_in_progress),
-                color = ExpedientesTheme.colors.positive,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.padding(start = 12.dp).weight(1f),
-            )
-            Text(
-                text = formatDuration(shift.summary.durationMinutes),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-        }
-        if (gpsActive) {
-            Text(
-                text = stringResource(R.string.home_gps_active),
-                color = ExpedientesTheme.colors.positive,
-                style = MaterialTheme.typography.bodyMedium,
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .background(ExpedientesTheme.colors.positiveContainer, RoundedCornerShape(8.dp))
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                        .testTag("gps_active"),
-            )
-        }
-        SectionCard {
-            Text(
-                text = stringResource(R.string.home_partial_profit),
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-            )
-            ProfitText(
-                value = shift.summary.profit,
-                fontSize = 40,
-                modifier = Modifier.align(Alignment.CenterHorizontally).testTag("partial_profit"),
-            )
-            ShiftDetails(
-                earnings = shift.summary.earningsTotal,
-                fuelCost = shift.summary.fuelCost,
-                km = shift.summary.distanceKm,
-                minutes = shift.summary.durationMinutes,
-                hourly = shift.summary.profitPerHour,
-                perKmValue = shift.summary.profitPerKm,
-            )
-        }
     }
 }
 

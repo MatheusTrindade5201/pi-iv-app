@@ -180,6 +180,8 @@ Protótipos: [login e cadastro](prototypes/01-login-cadastro.png) · [home sem e
 | | "Lançar ganho" (R$ 5 / 8 / 12 / 20) | `POST /shifts/{id}/earnings` |
 | | "Sobrescrever ganho atual" | `PATCH /shifts/{id}/earnings/{último id}` |
 | | "Encerrar Expediente" → sheet com "GPS ficou inativo por 6 min" + resumo → "Encerrar" / "Continuar" | `GET /shifts/current` (`gps.gaps`) → `POST /shifts/{id}/finish` |
+| | *Divergências intencionais:* a sheet de encerrar tem o título **"Encerrar expediente"** (o protótipo repete "Lançar ganho"); a sheet de ganho tem campo **"Outro valor"** além de 5/8/12/20 e mostra "Último lançado: R$ X" sob "Sobrescrever ganho atual"; o tempo inativo soma os `gps.gaps` da API **e** o silêncio desde o último ponto (> 2 min); com o GPS desligado o banner fica amarelo com **"Ativar"** | — |
+| | Encerrar: para o GPS → envia a fila → `POST /finish`. Sem internet ou erro → o expediente continua e o GPS religa; 409 (já encerrado em outro aparelho) conta como encerrado | — |
 | (contínuo) | Envio de pontos | `POST /shifts/{id}/track-points` |
 
 Tratamento de erros comum: o corpo `{"detail": "..."}` vira mensagem na tela; **401** limpa a sessão e volta ao Login; **409** "Já existe um expediente em andamento" leva à Home.
@@ -250,7 +252,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | ✅ |
 | 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | ✅ (Home; botão do Histórico na etapa 8) |
 | 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `UploadWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | ✅ |
-| 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | |
+| 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | ✅ |
 | 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | |
 | 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | |
 | 10 | **Entrega** | CI do app, build *release* (APK assinado), README com como rodar, vídeo/roteiro de demonstração | APK instalado num celular real executa o roteiro da §8 | |
