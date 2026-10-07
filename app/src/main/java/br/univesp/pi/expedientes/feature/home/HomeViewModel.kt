@@ -135,12 +135,20 @@ class HomeViewModel
         private val clock: Clock,
         private val tracking: TrackingController,
         private val trackingStatus: TrackingStatus,
+        private val startRequests: ShiftStartRequests,
     ) : ViewModel(),
         HomeActions,
         ShiftActions {
         private val _state = MutableStateFlow(HomeUiState(today = LocalDate.now(clock)))
         val state: StateFlow<HomeUiState> = _state.asStateFlow()
         private var loading = false
+        val startRequested: StateFlow<Boolean> = startRequests.pending
+
+        fun consumeStartRequest(): Boolean {
+            val content = _state.value.content
+            if (content is HomeContent.Loading) return false
+            return startRequests.consume() && content is HomeContent.Idle
+        }
 
         init {
             load()

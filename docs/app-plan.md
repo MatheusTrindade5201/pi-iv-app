@@ -171,6 +171,8 @@ Protótipos: [login e cadastro](prototypes/01-login-cadastro.png) · [home sem e
 | | *Adicionados (fora do protótipo):* link **"Sair da conta"** no fim do Perfil e diálogo **"Como medir?"** explicando o cálculo do consumo médio; o app mostra a primeira moto do usuário | — |
 | **Histórico** | Lista "Ontem / 18/09/2026 — Lucro do dia" | `GET /analytics/daily` |
 | | "Iniciar expediente" (moto Flex pergunta o combustível) | `POST /shifts` |
+| | *Adicionados (fora do protótipo):* filtro **7 / 30 / 90 dias** e card **"Resumo do período"** (lucro, ganhos, combustível, km, tempo, valor hora/km, dias trabalhados, média por dia) — é a "análise por período" pedida no escopo; tocar num dia mostra os detalhes; *pull-to-refresh*; com expediente aberto o botão vira **"Ver expediente em andamento"** | `GET /analytics/summary`, `GET /shifts/current` |
+| | O botão do Histórico leva à Home e dispara lá o mesmo fluxo de início (permissão, moto, Flex, 409) | — |
 | **Home (sem expediente)** | "Sábado, 19 de Setembro", "Olá, {nome}" | data local + `GET /users/me` |
 | | Card "Último registro — Ontem — Lucro do dia" com Ganhos, Combustível, KM, Tempo, Valor hora, Valor por KM | dia mais recente de `GET /analytics/daily` (valor hora/km calculados no app a partir dos totais, mesma regra `ROUND_HALF_UP` da API) |
 | | "Iniciar expediente" (também na Home, não só no Histórico) | `POST /shifts` |
@@ -250,10 +252,10 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 2 | **Rede e sessão** | Retrofit/OkHttp/serialization, DTOs de todos os endpoints, `AuthInterceptor`, DataStore do token, `ApiError`, logout em 401; testes com `MockWebServer` | Testes de rede verdes | ✅ |
 | 3 | **Login e Cadastro** | Telas "Entre" e "Cadastre", validação local (senhas iguais, ≥ 8 caracteres), erros da API na tela, sessão persistida | Cadastro → login → abas; reabrir o app mantém logado | ✅ |
 | 4 | **Perfil** | Nome editável; card "Minha moto" / "Cadastrar veículo" com bottom sheet (modelo, combustível, consumo, cilindrada, ano; "Como medir?"); "Valores do combustível" com edição | Cadastrar moto e preços pelo app e conferir via Swagger | ✅ |
-| 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | ✅ (Home; botão do Histórico na etapa 8) |
+| 5 | **Iniciar expediente** | Botão "Iniciar expediente" (Home e Histórico); escolha Gasolina/Etanol para moto Flex; mensagens de 409 (sem preço / já em andamento) | Expediente criado aparece em `GET /shifts/current` | ✅ |
 | 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `UploadWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | ✅ |
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | ✅ |
-| 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | |
+| 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | ✅ |
 | 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | |
 | 10 | **Entrega** | CI do app, build *release* (APK assinado), README com como rodar, vídeo/roteiro de demonstração | APK instalado num celular real executa o roteiro da §8 | |
 

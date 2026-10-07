@@ -106,10 +106,11 @@ class HomeViewModelTest {
     private val repository = FakeHomeRepository()
     private val tracking = FakeTrackingController()
     private val trackingStatus = TrackingStatus()
+    private val startRequests = ShiftStartRequests()
     private val idle get() = ApiResult.Success(HomeData("John Doe", null, lastDay))
 
     private fun TestScope.viewModel(): HomeViewModel {
-        val viewModel = HomeViewModel(repository, clock, tracking, trackingStatus)
+        val viewModel = HomeViewModel(repository, clock, tracking, trackingStatus, startRequests)
         advanceUntilIdle()
         return viewModel
     }
@@ -580,5 +581,30 @@ class HomeViewModelTest {
             advanceUntilIdle()
 
             assertEquals(Instant.EPOCH, viewModel.state.value.lastFixAt)
+        }
+
+    @Test
+    fun startRequestFromHistoryIsConsumedWhenIdle() =
+        runTest(mainDispatcherRule.dispatcher) {
+            repository.loads += idle
+            startRequests.request()
+            val viewModel = HomeViewModel(repository, clock, tracking, trackingStatus, startRequests)
+            assertEquals(false, viewModel.consumeStartRequest())
+            advanceUntilIdle()
+
+            assertEquals(true, viewModel.startRequested.value)
+            assertEquals(true, viewModel.consumeStartRequest())
+            assertEquals(false, viewModel.startRequested.value)
+            assertEquals(false, viewModel.consumeStartRequest())
+        }
+
+    @Test
+    fun startRequestIsDroppedWhenShiftAlreadyRunning() =
+        runTest(mainDispatcherRule.dispatcher) {
+            val viewModel = runningShift()
+            startRequests.request()
+
+            assertEquals(false, viewModel.consumeStartRequest())
+            assertEquals(false, viewModel.startRequested.value)
         }
 }

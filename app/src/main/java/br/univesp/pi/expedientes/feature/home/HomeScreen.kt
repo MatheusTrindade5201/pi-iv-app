@@ -115,7 +115,19 @@ fun HomeEntry(
                 prompt = permissionPromptAfterDenial(rationale)
             }
         }
+    val startRequested by viewModel.startRequested.collectAsStateWithLifecycle()
+    val onStartClick = {
+        if (LocationPermissions.hasPreciseLocation(context)) {
+            prompt = null
+            viewModel.startShift()
+        } else {
+            launcher.launch(LocationPermissions.requested)
+        }
+    }
     LaunchedEffect(Unit) { viewModel.refresh() }
+    LaunchedEffect(startRequested, state.content) {
+        if (startRequested && viewModel.consumeStartRequest()) onStartClick()
+    }
     HomeScreen(
         state = state,
         actions = viewModel,
@@ -129,14 +141,7 @@ fun HomeEntry(
                 launcher.launch(LocationPermissions.requested)
             }
         },
-        onStartClick = {
-            if (LocationPermissions.hasPreciseLocation(context)) {
-                prompt = null
-                viewModel.startShift()
-            } else {
-                launcher.launch(LocationPermissions.requested)
-            }
-        },
+        onStartClick = onStartClick,
         permissionPrompt = prompt,
         onPermissionAction = {
             when (prompt) {
@@ -324,7 +329,7 @@ fun ShiftDetails(
 }
 
 @Composable
-private fun dayLabel(
+fun dayLabel(
     date: LocalDate,
     today: LocalDate,
 ): String =

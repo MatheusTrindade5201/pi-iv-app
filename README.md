@@ -12,7 +12,7 @@ univesp/
 
 ## Status
 
-Etapas 1–7 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil; Home com último registro e início de expediente; rastreamento de GPS com fila offline; Home em andamento com ganhos e encerramento). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+Etapas 1–8 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil; Home com último registro e início de expediente; rastreamento de GPS com fila offline; Home em andamento com ganhos e encerramento; Histórico com análise por período). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 

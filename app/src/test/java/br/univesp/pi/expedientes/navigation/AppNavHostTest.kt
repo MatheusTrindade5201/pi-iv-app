@@ -40,6 +40,9 @@ class AppNavHostTest {
                     homeContent = { openProfile ->
                         Text("conteudo da home", Modifier.clickable(onClick = openProfile))
                     },
+                    historyContent = { openHome ->
+                        Text("conteudo do historico", Modifier.clickable(onClick = openHome))
+                    },
                     profileContent = { Text("conteudo do perfil") },
                 )
             }
@@ -101,7 +104,7 @@ class AppNavHostTest {
 
         composeRule.onNodeWithTag("tab_History").performClick()
         composeRule.onNodeWithTag("tab_History").assertIsSelected()
-        composeRule.onNodeWithText("Em construção").assertIsDisplayed()
+        composeRule.onNodeWithText("conteudo do historico").assertIsDisplayed()
 
         composeRule.onNodeWithTag("tab_Profile").performClick()
         composeRule.onNodeWithTag("tab_Profile").assertIsSelected()
@@ -132,5 +135,16 @@ class AppNavHostTest {
 
         composeRule.onNodeWithText("Entre").assertIsDisplayed()
         composeRule.onNodeWithTag("tab_Home").assertDoesNotExist()
+    }
+
+    @Test
+    fun historyCanOpenHomeTab() {
+        launch(isLoggedIn = true)
+        composeRule.onNodeWithTag("tab_History").performClick()
+
+        composeRule.onNodeWithText("conteudo do historico").performClick()
+
+        composeRule.onNodeWithTag("tab_Home").assertIsSelected()
+        composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
     }
 }

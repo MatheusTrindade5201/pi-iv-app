@@ -35,7 +35,7 @@ import br.univesp.pi.expedientes.R
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 import br.univesp.pi.expedientes.feature.auth.LoginEntry
 import br.univesp.pi.expedientes.feature.auth.RegisterEntry
-import br.univesp.pi.expedientes.feature.history.HistoryScreen
+import br.univesp.pi.expedientes.feature.history.HistoryEntry
 import br.univesp.pi.expedientes.feature.home.HomeEntry
 import br.univesp.pi.expedientes.feature.profile.ProfileEntry
 
@@ -46,6 +46,7 @@ fun AppNavHost(
     loginContent: @Composable (onRegisterClick: () -> Unit) -> Unit = { LoginEntry(onRegisterClick = it) },
     registerContent: @Composable (onLoginClick: () -> Unit) -> Unit = { RegisterEntry(onLoginClick = it) },
     homeContent: @Composable (onOpenProfile: () -> Unit) -> Unit = { HomeEntry(onOpenProfile = it) },
+    historyContent: @Composable (onOpenHome: () -> Unit) -> Unit = { HistoryEntry(onOpenHome = it) },
     profileContent: @Composable () -> Unit = { ProfileEntry() },
 ) {
     val startDestination = remember { if (isLoggedIn) HomeRoute else LoginRoute }
@@ -85,7 +86,7 @@ fun AppNavHost(
                 registerContent { navController.popBackStack() }
             }
             composable<HomeRoute> { homeContent { navController.navigateToTab(TopLevelDestination.Profile) } }
-            composable<HistoryRoute> { HistoryScreen() }
+            composable<HistoryRoute> { historyContent { navController.navigateToTab(TopLevelDestination.Home) } }
             composable<ProfileRoute> { profileContent() }
         }
     }

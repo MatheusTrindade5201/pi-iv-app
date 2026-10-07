@@ -79,6 +79,20 @@
   <string name="permission_open_settings">Abrir configurações</string>
 
   <string name="history_title">Histórico</string>
+  <plurals name="history_period_days">
+    <item quantity="one">%1$d dia</item>
+    <item quantity="other">%1$d dias</item>
+  </plurals>
+  <string name="history_summary">Resumo do período</string>
+  <string name="history_profit">Lucro</string>
+  <string name="history_days_worked">Dias trabalhados</string>
+  <string name="history_avg_day">Média por dia</string>
+  <plurals name="history_empty">
+    <item quantity="one">Nenhum expediente encerrado hoje.</item>
+    <item quantity="other">Nenhum expediente encerrado nos últimos %1$d dias.</item>
+  </plurals>
+  <string name="history_view_shift">Ver expediente em andamento</string>
+  <string name="history_refresh_failed">Não foi possível atualizar: %1$s</string>
   <string name="profile_title">Perfil</string>
   <string name="profile_name">Nome</string>
   <string name="profile_name_saving">Salvando…</string>
@@ -123,5 +137,4 @@
   <string name="error_year">Ano entre 1950 e o ano que vem</string>
   <string name="error_price">Informe um valor entre R$ 0,01 e R$ 999,99</string>
   <string name="error_no_price">Informe pelo menos um valor</string>
-  <string name="screen_under_construction">Em construção</string>
 </resources>
