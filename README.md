@@ -1,6 +1,6 @@
 # pi-iv-app
 
-App Android (Kotlin + Jetpack Compose) para motociclistas registrarem seus expedientes: coleta o GPS durante o trabalho, lança os ganhos e mostra o lucro parcial, o resumo final e o histórico por dia. Nome provisório: **Expedientes** (`br.univesp.pi.expedientes`).
+App Android (Kotlin + Jetpack Compose) para motociclistas registrarem seus expedientes: coleta o GPS durante o trabalho, lança os ganhos e mostra o lucro parcial, o resumo final e o histórico por dia. Nome: **Expediente** (pacote `br.univesp.pi.expedientes`).
 
 Os cálculos (distância, tempo parado com motor ligado, combustível, lucro) são feitos pela API, no repositório irmão **[`pi-iv`](../pi-iv)**:
 
@@ -12,7 +12,7 @@ univesp/
 
 ## Status
 
-Etapas 1–8 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil; Home com último registro e início de expediente; rastreamento de GPS com fila offline; Home em andamento com ganhos e encerramento; Histórico com análise por período). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+Etapas 1–9 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil; Home com último registro e início de expediente; rastreamento de GPS com fila offline; Home em andamento com ganhos e encerramento; Histórico com análise por período; polimento: nome/ícone, sem internet, sessão expirada, acessibilidade). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 

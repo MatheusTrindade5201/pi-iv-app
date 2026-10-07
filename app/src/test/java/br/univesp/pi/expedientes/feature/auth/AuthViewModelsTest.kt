@@ -2,6 +2,7 @@ package br.univesp.pi.expedientes.feature.auth
 
 import app.cash.turbine.test
 import br.univesp.pi.expedientes.MainDispatcherRule
+import br.univesp.pi.expedientes.core.session.SessionExpiry
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -46,7 +47,7 @@ class AuthViewModelsTest {
     @Test
     fun invalidLoginDoesNotCallRepository() =
         runTest(mainDispatcherRule.dispatcher) {
-            val viewModel = LoginViewModel(repository)
+            val viewModel = LoginViewModel(repository, SessionExpiry())
             viewModel.onChange(AuthField.Email, "nao-e-email")
 
             viewModel.submit()
@@ -65,7 +66,7 @@ class AuthViewModelsTest {
     @Test
     fun editingFieldClearsItsError() =
         runTest(mainDispatcherRule.dispatcher) {
-            val viewModel = LoginViewModel(repository)
+            val viewModel = LoginViewModel(repository, SessionExpiry())
             viewModel.submit()
 
             viewModel.onChange(AuthField.Email, "j")
@@ -82,7 +83,7 @@ class AuthViewModelsTest {
         runTest(mainDispatcherRule.dispatcher) {
             val gate = CompletableDeferred<Unit>()
             repository.gate = gate
-            val viewModel = LoginViewModel(repository)
+            val viewModel = LoginViewModel(repository, SessionExpiry())
             viewModel.onChange(AuthField.Email, " John@Example.com ")
             viewModel.onChange(AuthField.Password, "senha-segura-123")
 
@@ -100,7 +101,7 @@ class AuthViewModelsTest {
     fun doubleSubmitSendsOnce() =
         runTest(mainDispatcherRule.dispatcher) {
             repository.gate = CompletableDeferred()
-            val viewModel = LoginViewModel(repository)
+            val viewModel = LoginViewModel(repository, SessionExpiry())
             viewModel.onChange(AuthField.Email, "john@example.com")
             viewModel.onChange(AuthField.Password, "x")
 
@@ -115,7 +116,7 @@ class AuthViewModelsTest {
     fun loginFailureShowsGeneralError() =
         runTest(mainDispatcherRule.dispatcher) {
             repository.nextResult = AuthResult.Failure(AuthFailure.Api("E-mail ou senha inválidos"))
-            val viewModel = LoginViewModel(repository)
+            val viewModel = LoginViewModel(repository, SessionExpiry())
             viewModel.onChange(AuthField.Email, "john@example.com")
             viewModel.onChange(AuthField.Password, "errada")
 

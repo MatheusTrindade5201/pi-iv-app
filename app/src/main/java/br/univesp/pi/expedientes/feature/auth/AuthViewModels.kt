@@ -2,6 +2,7 @@ package br.univesp.pi.expedientes.feature.auth
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.univesp.pi.expedientes.core.session.SessionExpiry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +49,10 @@ class LoginViewModel
     @Inject
     constructor(
         private val repository: AuthRepository,
+        expiry: SessionExpiry,
     ) : AuthFormViewModel() {
+        val sessionExpired: StateFlow<Boolean> = expiry.expired
+
         override fun validate(state: AuthFormState) =
             AuthValidation.validateLogin(state.value(AuthField.Email), state.value(AuthField.Password))
 

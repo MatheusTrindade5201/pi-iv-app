@@ -14,11 +14,13 @@ fun LoginEntry(
     viewModel: LoginViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val expired by viewModel.sessionExpired.collectAsStateWithLifecycle()
     LoginScreen(
         state = state,
         onChange = viewModel::onChange,
         onSubmit = viewModel::submit,
         onRegisterClick = onRegisterClick,
+        notice = if (expired) stringResource(R.string.session_expired) else null,
     )
 }
 
@@ -29,8 +31,10 @@ fun LoginScreen(
     onSubmit: () -> Unit,
     onRegisterClick: () -> Unit,
     modifier: Modifier = Modifier,
+    notice: String? = null,
 ) {
     AuthForm(
+        notice = notice,
         title = stringResource(R.string.login_title),
         fields = listOf(EmailSpec, PasswordSpec),
         state = state,

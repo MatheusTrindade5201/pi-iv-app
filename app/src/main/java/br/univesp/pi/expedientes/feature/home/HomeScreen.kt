@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,6 +36,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -60,6 +61,7 @@ import br.univesp.pi.expedientes.core.format.relativeDay
 import br.univesp.pi.expedientes.core.network.RequestFailure
 import br.univesp.pi.expedientes.core.network.api.DailyTotals
 import br.univesp.pi.expedientes.core.ui.components.DetailList
+import br.univesp.pi.expedientes.core.ui.components.LoadingIndicator
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
 import br.univesp.pi.expedientes.core.ui.components.SectionCard
 import br.univesp.pi.expedientes.core.ui.components.text
@@ -180,7 +182,7 @@ fun HomeScreen(
     when (val content = state.content) {
         HomeContent.Loading ->
             Box(modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                LoadingIndicator()
             }
         is HomeContent.Failed -> FailedHome(content.failure, actions::retry, modifier)
         is HomeContent.Idle ->
@@ -224,6 +226,7 @@ private fun IdleHome(
             Text(
                 text = stringResource(R.string.home_greeting, content.userName.substringBefore(' ')),
                 style = MaterialTheme.typography.headlineLarge,
+                modifier = Modifier.semantics { heading() },
             )
             Spacer(Modifier.height(8.dp))
             LastRecordCard(content.lastDay, state.today)
@@ -263,7 +266,7 @@ private fun LastRecordCard(
             Text(
                 text = stringResource(R.string.home_last_record),
                 style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).semantics { heading() },
             )
             Text(text = dayLabel(day.date, today), style = MaterialTheme.typography.bodyLarge)
         }

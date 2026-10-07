@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -21,11 +21,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -38,6 +42,7 @@ import br.univesp.pi.expedientes.core.network.api.DailyTotals
 import br.univesp.pi.expedientes.core.network.api.PeriodSummary
 import br.univesp.pi.expedientes.core.ui.components.ChoiceChips
 import br.univesp.pi.expedientes.core.ui.components.DetailList
+import br.univesp.pi.expedientes.core.ui.components.LoadingIndicator
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
 import br.univesp.pi.expedientes.core.ui.components.ScreenTitle
 import br.univesp.pi.expedientes.core.ui.components.SectionCard
@@ -86,7 +91,7 @@ fun HistoryScreen(
             when (val content = state.content) {
                 HistoryContent.Loading ->
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+                        LoadingIndicator()
                     }
                 is HistoryContent.Failed -> FailedHistory(content.failure, actions::retry)
                 is HistoryContent.Loaded ->
@@ -166,7 +171,11 @@ private fun HistoryList(
 @Composable
 private fun SummaryCard(summary: PeriodSummary) {
     SectionCard(modifier = Modifier.testTag("history_summary")) {
-        Text(text = stringResource(R.string.history_summary), style = MaterialTheme.typography.bodyLarge)
+        Text(
+            text = stringResource(R.string.history_summary),
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.semantics { heading() },
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = stringResource(R.string.history_profit),
@@ -201,10 +210,14 @@ private fun DayCard(
     expanded: Boolean,
     onToggle: () -> Unit,
 ) {
+    val actionLabel = stringResource(if (expanded) R.string.a11y_hide_details else R.string.a11y_show_details)
+    val stateLabel = stringResource(if (expanded) R.string.a11y_expanded else R.string.a11y_collapsed)
     SectionCard(
         modifier =
             Modifier
-                .clickable(role = Role.Button, onClick = onToggle)
+                .clip(RoundedCornerShape(8.dp))
+                .clickable(role = Role.Button, onClickLabel = actionLabel, onClick = onToggle)
+                .semantics { stateDescription = stateLabel }
                 .testTag("day_${day.date}"),
     ) {
         Text(text = dayLabel(day.date, today), style = MaterialTheme.typography.bodyLarge)

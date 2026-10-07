@@ -2,11 +2,12 @@ package br.univesp.pi.expedientes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.univesp.pi.expedientes.core.connectivity.NetworkMonitor
+import br.univesp.pi.expedientes.core.session.SessionExpiry
 import br.univesp.pi.expedientes.core.session.SessionManager
 import br.univesp.pi.expedientes.feature.tracking.TrackingController
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -16,14 +17,23 @@ class AppViewModel
     constructor(
         sessionManager: SessionManager,
         tracking: TrackingController,
+        networkMonitor: NetworkMonitor,
+        expiry: SessionExpiry,
     ) : ViewModel() {
         val isLoggedIn: StateFlow<Boolean?> = sessionManager.isLoggedIn
+        val isOnline: StateFlow<Boolean> = networkMonitor.isOnline
 
         init {
             viewModelScope.launch {
-                sessionManager.isLoggedIn.filter { it == false }.collect {
-                    tracking.stop()
-                    tracking.clearPending()
+                sessionManager.isLoggedIn.collect { loggedIn ->
+                    when (loggedIn) {
+                        false -> {
+                            tracking.stop()
+                            tracking.clearPending()
+                        }
+                        true -> expiry.clear()
+                        null -> Unit
+                    }
                 }
             }
         }

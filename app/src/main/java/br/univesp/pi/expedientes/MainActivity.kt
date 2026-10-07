@@ -30,9 +30,10 @@ class MainActivity : ComponentActivity() {
         setContent {
             ExpedientesTheme {
                 val isLoggedIn by appViewModel.isLoggedIn.collectAsStateWithLifecycle()
+                val isOnline by appViewModel.isOnline.collectAsStateWithLifecycle()
                 when (val loggedIn = isLoggedIn) {
                     null -> Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
-                    else -> AppNavHost(isLoggedIn = loggedIn)
+                    else -> AppNavHost(isLoggedIn = loggedIn, isOnline = isOnline)
                 }
             }
         }

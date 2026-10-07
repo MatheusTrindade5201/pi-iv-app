@@ -4,6 +4,7 @@ import br.univesp.pi.expedientes.core.network.api.AuthApi
 import br.univesp.pi.expedientes.core.network.api.LoginRequest
 import br.univesp.pi.expedientes.core.network.api.UserApi
 import br.univesp.pi.expedientes.core.session.FakeSessionStore
+import br.univesp.pi.expedientes.core.session.SessionExpiry
 import br.univesp.pi.expedientes.core.session.SessionManager
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.TestScope
@@ -33,6 +34,8 @@ class AuthInterceptorsTest {
         server.close()
     }
 
+    private val expiry = SessionExpiry()
+
     private fun retrofit(sessionManager: SessionManager): Retrofit =
         NetworkModule.provideRetrofit(
             baseUrl = server.url("/api/v1/").toString(),
@@ -40,7 +43,7 @@ class AuthInterceptorsTest {
                 OkHttpClient
                     .Builder()
                     .addInterceptor(AuthInterceptor(sessionManager))
-                    .addInterceptor(UnauthorizedInterceptor(sessionManager))
+                    .addInterceptor(UnauthorizedInterceptor(sessionManager, expiry))
                     .build(),
             json = ApiJson,
         )
@@ -100,6 +103,7 @@ class AuthInterceptorsTest {
 
             assertEquals(ApiResult.HttpError(401, "Não autenticado"), result)
             assertEquals(false, sessionManager.isLoggedIn.value)
+            assertEquals(true, expiry.expired.value)
         }
 
     @Test
@@ -111,5 +115,6 @@ class AuthInterceptorsTest {
             apiCall { retrofit(sessionManager).create(AuthApi::class.java).login(LoginRequest("a@b.com", "x")) }
 
             assertEquals(true, sessionManager.isLoggedIn.value)
+            assertEquals(false, expiry.expired.value)
         }
 }

@@ -256,8 +256,20 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 6 | **Rastreamento de GPS** | Permissões, *foreground service* com notificação, Room (fila), envio em lote, `UploadWorker`, religar serviço ao abrir o app | Rota GPX no emulador → pontos chegam na API; com Wi-Fi desligado a fila cresce e esvazia ao religar | ✅ |
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | ✅ |
 | 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | ✅ |
-| 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | |
+| 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | ✅ (roteiro da §8 fica para o teste no emulador) |
 | 10 | **Entrega** | CI do app, build *release* (APK assinado), README com como rodar, vídeo/roteiro de demonstração | APK instalado num celular real executa o roteiro da §8 | |
+
+---
+
+### 7.1 Polimento (etapa 9)
+
+- **Nome e ícone:** "Expediente"; ícone adaptativo laranja com gráfico de barras e tendência (com versão monocromática para ícones temáticos do Android 13+).
+- **Sem internet:** faixa amarela "Sem internet. Os dados serão atualizados quando a conexão voltar." em todas as telas (anunciada pelo TalkBack).
+- **Sessão expirada:** um 401 numa chamada autenticada volta ao Login com o aviso "Sua sessão expirou. Entre novamente."
+- **Contraste (WCAG AA ≥ 4,5:1):** texto verde do banner do GPS `#2BC85E` (4,99) e vermelho de erro/lucro negativo `#F05252` (4,79 no card); demais pares já passavam (5,0–11,8).
+- **TalkBack:** títulos marcados como cabeçalho; indicador de carregamento anuncia "Carregando"; cards do Histórico anunciam "mostrar/ocultar detalhes" e o estado.
+- **Fonte 2×:** testes garantem que "Iniciar expediente", "Lançar ganho", "Encerrar" e o botão do Histórico continuam visíveis/alcançáveis e com ≥ 48 dp de altura.
+- **Lint:** avisos agora quebram o build (`warningsAsErrors`), exceto checagens de versão nova de dependência.
 
 ---
 

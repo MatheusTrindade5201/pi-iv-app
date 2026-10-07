@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="app_name">Expedientes</string>
+  <string name="app_name">Expediente</string>
+  <string name="loading">Carregando</string>
+  <string name="offline_notice">Sem internet. Os dados serão atualizados quando a conexão voltar.</string>
+  <string name="session_expired">Sua sessão expirou. Entre novamente.</string>
+  <string name="a11y_show_details">mostrar detalhes</string>
+  <string name="a11y_hide_details">ocultar detalhes</string>
+  <string name="a11y_expanded">detalhes abertos</string>
+  <string name="a11y_collapsed">detalhes fechados</string>
 
   <string name="nav_home">Home</string>
   <string name="nav_history">Histórico</string>

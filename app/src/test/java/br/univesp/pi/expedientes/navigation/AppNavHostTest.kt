@@ -29,12 +29,16 @@ class AppNavHostTest {
 
     private val loggedIn = mutableStateOf(false)
 
-    private fun launch(isLoggedIn: Boolean) {
+    private fun launch(
+        isLoggedIn: Boolean,
+        isOnline: Boolean = true,
+    ) {
         loggedIn.value = isLoggedIn
         composeRule.setContent {
             ExpedientesTheme {
                 AppNavHost(
                     isLoggedIn = loggedIn.value,
+                    isOnline = isOnline,
                     loginContent = { onRegister -> LoginScreen(AuthFormState(), { _, _ -> }, {}, onRegister) },
                     registerContent = { onLogin -> RegisterScreen(AuthFormState(), { _, _ -> }, {}, onLogin) },
                     homeContent = { openProfile ->
@@ -146,5 +150,20 @@ class AppNavHostTest {
 
         composeRule.onNodeWithTag("tab_Home").assertIsSelected()
         composeRule.onNodeWithText("conteudo da home").assertIsDisplayed()
+    }
+
+    @Test
+    fun offlineBarOnlyWithoutInternet() {
+        launch(isLoggedIn = true)
+        composeRule.onNodeWithTag("offline_bar").assertDoesNotExist()
+    }
+
+    @Test
+    fun offlineBarShowsNotice() {
+        launch(isLoggedIn = true, isOnline = false)
+
+        composeRule
+            .onNodeWithText("Sem internet. Os dados serão atualizados quando a conexão voltar.")
+            .assertIsDisplayed()
     }
 }

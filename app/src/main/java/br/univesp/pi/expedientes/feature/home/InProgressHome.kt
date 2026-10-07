@@ -25,10 +25,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import br.univesp.pi.expedientes.R
@@ -36,6 +37,7 @@ import br.univesp.pi.expedientes.core.format.formatDuration
 import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
 import br.univesp.pi.expedientes.core.ui.components.SectionCard
+import br.univesp.pi.expedientes.core.ui.components.StatusBanner
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 import java.time.Instant
 
@@ -103,7 +105,7 @@ fun PartialProfitCard(shift: ShiftResponse) {
         Text(
             text = stringResource(R.string.home_partial_profit),
             style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            modifier = Modifier.align(Alignment.CenterHorizontally).semantics { heading() },
         )
         ProfitText(
             value = shift.summary.profit,
@@ -139,7 +141,8 @@ private fun GpsBannerView(
         text = text,
         icon = if (active) R.drawable.ic_clock else R.drawable.ic_warning,
         container = if (active) ExpedientesTheme.colors.positiveContainer else ExpedientesTheme.colors.warningContainer,
-        content = if (active) ExpedientesTheme.colors.positive else ExpedientesTheme.colors.onWarningContainer,
+        content =
+            if (active) ExpedientesTheme.colors.onPositiveContainer else ExpedientesTheme.colors.onWarningContainer,
         modifier = Modifier.testTag("gps_banner"),
     ) {
         if (banner is GpsBanner.Inactive && banner.canResume) {
@@ -151,36 +154,6 @@ private fun GpsBannerView(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun StatusBanner(
-    text: String,
-    icon: Int,
-    container: Color,
-    content: Color,
-    modifier: Modifier = Modifier,
-    trailing: @Composable () -> Unit = {},
-) {
-    Row(
-        modifier =
-            modifier
-                .fillMaxWidth()
-                .heightIn(min = 52.dp)
-                .background(container, RoundedCornerShape(8.dp))
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        Icon(painterResource(icon), contentDescription = null, tint = content)
-        Text(
-            text = text,
-            color = content,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = Modifier.weight(1f),
-        )
-        trailing()
     }
 }
 

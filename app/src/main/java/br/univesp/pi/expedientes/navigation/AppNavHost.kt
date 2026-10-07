@@ -21,6 +21,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hasRoute
@@ -32,6 +35,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import br.univesp.pi.expedientes.R
+import br.univesp.pi.expedientes.core.ui.components.StatusBanner
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 import br.univesp.pi.expedientes.feature.auth.LoginEntry
 import br.univesp.pi.expedientes.feature.auth.RegisterEntry
@@ -42,6 +46,7 @@ import br.univesp.pi.expedientes.feature.profile.ProfileEntry
 @Composable
 fun AppNavHost(
     isLoggedIn: Boolean,
+    isOnline: Boolean = true,
     navController: NavHostController = rememberNavController(),
     loginContent: @Composable (onRegisterClick: () -> Unit) -> Unit = { LoginEntry(onRegisterClick = it) },
     registerContent: @Composable (onLoginClick: () -> Unit) -> Unit = { RegisterEntry(onLoginClick = it) },
@@ -64,7 +69,12 @@ fun AppNavHost(
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
-        topBar = { AppHeader() },
+        topBar = {
+            Column {
+                AppHeader()
+                if (!isOnline) OfflineBar()
+            }
+        },
         bottomBar = {
             if (currentTab != null) {
                 BottomBar(
@@ -90,6 +100,21 @@ fun AppNavHost(
             composable<ProfileRoute> { profileContent() }
         }
     }
+}
+
+@Composable
+private fun OfflineBar() {
+    StatusBanner(
+        text = stringResource(R.string.offline_notice),
+        icon = R.drawable.ic_warning,
+        container = ExpedientesTheme.colors.warningContainer,
+        content = ExpedientesTheme.colors.onWarningContainer,
+        modifier =
+            Modifier
+                .padding(horizontal = 20.dp, vertical = 4.dp)
+                .semantics { liveRegion = LiveRegionMode.Polite }
+                .testTag("offline_bar"),
+    )
 }
 
 @Composable

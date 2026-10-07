@@ -3,6 +3,8 @@ package br.univesp.pi.expedientes.feature.auth
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.isHeading
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -23,6 +25,18 @@ class AuthScreensTest {
     val composeRule = createComposeRule()
 
     @Test
+    fun loginShowsSessionExpiredNotice() {
+        composeRule.setContent {
+            ExpedientesTheme {
+                LoginScreen(AuthFormState(), { _, _ -> }, {}, {}, notice = "Sua sessão expirou. Entre novamente.")
+            }
+        }
+
+        composeRule.onNodeWithTag("auth_notice").assertIsDisplayed()
+        composeRule.onNodeWithText("Sua sessão expirou. Entre novamente.").assertIsDisplayed()
+    }
+
+    @Test
     fun loginMatchesPrototype() {
         composeRule.setContent {
             ExpedientesTheme { LoginScreen(AuthFormState(), { _, _ -> }, {}, {}) }
@@ -31,6 +45,8 @@ class AuthScreensTest {
         listOf("Entre", "Email", "Senha", "exemplo@gmail.com", "Cadastrar-se", "Entrar").forEach {
             composeRule.onNodeWithText(it).assertIsDisplayed()
         }
+        composeRule.onNodeWithTag("auth_notice").assertDoesNotExist()
+        composeRule.onNode(isHeading()).assertTextEquals("Entre")
     }
 
     @Test

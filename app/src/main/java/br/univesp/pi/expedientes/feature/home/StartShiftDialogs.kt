@@ -18,6 +18,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import br.univesp.pi.expedientes.R
 import br.univesp.pi.expedientes.core.network.api.FuelIds
@@ -89,7 +91,11 @@ fun ChooseFuelForm(
         modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = stringResource(R.string.home_choose_fuel), style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = stringResource(R.string.home_choose_fuel),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() },
+        )
         Text(
             text = stringResource(R.string.home_choose_fuel_hint),
             style = MaterialTheme.typography.bodyMedium,

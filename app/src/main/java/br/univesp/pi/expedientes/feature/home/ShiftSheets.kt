@@ -22,6 +22,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -33,6 +35,7 @@ import br.univesp.pi.expedientes.core.network.api.ShiftResponse
 import br.univesp.pi.expedientes.core.ui.components.ChoiceChips
 import br.univesp.pi.expedientes.core.ui.components.LabeledTextField
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
+import br.univesp.pi.expedientes.core.ui.components.StatusBanner
 import br.univesp.pi.expedientes.core.ui.components.text
 import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 import java.math.BigDecimal
@@ -83,7 +86,11 @@ fun EarningForm(
         modifier = modifier.fillMaxWidth().padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = stringResource(R.string.home_add_earning), style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = stringResource(R.string.home_add_earning),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() },
+        )
         Text(
             text = formatBrl(flow.amount ?: BigDecimal.ZERO),
             fontSize = 40.sp,
@@ -162,7 +169,11 @@ fun FinishForm(
         modifier = modifier.fillMaxWidth().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(text = stringResource(R.string.finish_title), style = MaterialTheme.typography.titleLarge)
+        Text(
+            text = stringResource(R.string.finish_title),
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { heading() },
+        )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = stringResource(R.string.finish_elapsed),

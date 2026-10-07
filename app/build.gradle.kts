@@ -52,6 +52,12 @@ android {
         buildConfig = true
     }
 
+    lint {
+        warningsAsErrors = true
+        abortOnError = true
+        disable += setOf("GradleDependency", "NewerVersionAvailable", "AndroidGradlePluginVersion")
+    }
+
     testOptions {
         unitTests.isIncludeAndroidResources = true
         unitTests.all {

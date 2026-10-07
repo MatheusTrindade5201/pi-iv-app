@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 data class ExtendedColors(
     val positive: Color,
     val positiveContainer: Color,
+    val onPositiveContainer: Color,
     val warningContainer: Color,
     val onWarningContainer: Color,
     val selectedContainer: Color,
@@ -24,6 +25,7 @@ private val extendedColors =
     ExtendedColors(
         positive = Green,
         positiveContainer = GreenContainer,
+        onPositiveContainer = OnGreenContainer,
         warningContainer = WarningContainer,
         onWarningContainer = OnWarningContainer,
         selectedContainer = OrangeSelected,

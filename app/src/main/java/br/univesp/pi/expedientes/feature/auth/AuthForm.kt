@@ -22,6 +22,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +31,9 @@ import androidx.compose.ui.unit.dp
 import br.univesp.pi.expedientes.R
 import br.univesp.pi.expedientes.core.ui.components.LabeledTextField
 import br.univesp.pi.expedientes.core.ui.components.PrimaryButton
+import br.univesp.pi.expedientes.core.ui.components.StatusBanner
 import br.univesp.pi.expedientes.core.ui.components.TextLink
+import br.univesp.pi.expedientes.core.ui.theme.ExpedientesTheme
 
 data class AuthFieldSpec(
     val field: AuthField,
@@ -69,6 +73,7 @@ fun AuthForm(
     linkLabel: String,
     onLink: () -> Unit,
     modifier: Modifier = Modifier,
+    notice: String? = null,
 ) {
     Column(
         modifier =
@@ -84,9 +89,18 @@ fun AuthForm(
             text = title,
             style = MaterialTheme.typography.displayMedium,
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().semantics { heading() },
         )
-        Spacer(Modifier.height(56.dp))
+        Spacer(Modifier.height(if (notice == null) 56.dp else 24.dp))
+        notice?.let {
+            StatusBanner(
+                text = it,
+                icon = R.drawable.ic_warning,
+                container = ExpedientesTheme.colors.warningContainer,
+                content = ExpedientesTheme.colors.onWarningContainer,
+                modifier = Modifier.widthIn(max = 480.dp).padding(bottom = 24.dp).testTag("auth_notice"),
+            )
+        }
         Column(
             modifier = Modifier.widthIn(max = 480.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
