@@ -11,6 +11,7 @@
   <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
   <application
+    android:networkSecurityConfig="@xml/network_security_config"
     android:name=".ExpedientesApp"
     android:allowBackup="false"
     android:dataExtractionRules="@xml/data_extraction_rules"

@@ -16,6 +16,23 @@ val localProperties =
     }
 
 val debugApiBaseUrl = localProperties.getProperty("api.baseUrl") ?: "http://10.0.2.2:8000/api/v1/"
+val releaseApiBaseUrl =
+    System.getenv("API_RELEASE_URL")
+        ?: localProperties.getProperty("api.releaseUrl")
+        ?: "http://127.0.0.1:8000/api/v1/"
+
+val keystoreProperties =
+    Properties().apply {
+        val file = rootProject.file("keystore.properties")
+        if (file.exists()) file.inputStream().use(::load)
+    }
+
+fun signingValue(
+    env: String,
+    key: String,
+): String? = System.getenv(env)?.takeIf { it.isNotBlank() } ?: keystoreProperties.getProperty(key)
+
+val releaseStoreFile = signingValue("RELEASE_STORE_FILE", "storeFile")
 
 android {
     namespace = "br.univesp.pi.expedientes"
@@ -27,7 +44,18 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
+    }
+
+    signingConfigs {
+        if (releaseStoreFile != null) {
+            create("release") {
+                storeFile = rootProject.file(releaseStoreFile)
+                storePassword = signingValue("RELEASE_STORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("RELEASE_KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("RELEASE_KEY_PASSWORD", "keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -38,7 +66,14 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            buildConfigField("String", "API_BASE_URL", "\"https://api.expedientes.invalid/api/v1/\"")
+            buildConfigField("String", "API_BASE_URL", "\"$releaseApiBaseUrl\"")
+            signingConfig =
+                if (releaseStoreFile != null) {
+                    signingConfigs.getByName("release")
+                } else {
+                    logger.warn("keystore.properties ausente: release assinado com a chave de debug")
+                    signingConfigs.getByName("debug")
+                }
         }
     }
 

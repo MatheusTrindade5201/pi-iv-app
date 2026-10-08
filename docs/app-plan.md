@@ -257,7 +257,7 @@ Tudo abaixo acontece **neste repositório** (`pi-iv-app`). O `pi-iv` (API) só m
 | 7 | **Home em andamento** | Cronômetro, banner "GPS ativo – último ponto há Xs", card Lucro Parcial (atualização periódica), "Lançar ganho" (5/8/12/20 + valor livre), "Sobrescrever ganho atual", sheet de encerrar com aviso de GPS inativo, "Continuar" | Valores da Home batem com `GET /shifts/current`; encerrar para o serviço de GPS | ✅ |
 | 8 | **Histórico** | Lista por dia ("Ontem", "dd/MM/yyyy"), lucro em verde/vermelho, estado vazio, *pull-to-refresh* | Dias e lucros batem com `GET /analytics/daily` | ✅ |
 | 9 | **Polimento** | Estados de carregamento/erro/sem internet, formatação pt-BR, acessibilidade (tamanhos de toque, contraste, TalkBack), ícone e nome do app | Roteiro da §8 completo sem falhas | ✅ (roteiro da §8 fica para o teste no emulador) |
-| 10 | **Entrega** | CI do app, build *release* (APK assinado), README com como rodar, vídeo/roteiro de demonstração | APK instalado num celular real executa o roteiro da §8 | |
+| 10 | **Entrega** | CI do app, build *release* (APK assinado), README com como rodar, vídeo/roteiro de demonstração | APK instalado num celular real executa o roteiro da §8 | ✅ (falta instalar num celular real e rodar o roteiro) |
 
 ---
 
@@ -285,7 +285,7 @@ Executar com a API local + emulador reproduzindo a rota GPX (ou celular com `adb
 6. **Lançar ganhos** R$ 12, R$ 8, R$ 20 — Ganhos = R$ 40,00; Lucro Parcial = 40 − combustível.
 7. **Sobrescrever ganho atual** para R$ 12 — Ganhos = R$ 32,00.
 8. **Sem internet** — desligar Wi-Fi/dados por ~2 min com a rota rodando, religar — nenhum ponto perdido nem duplicado (contagem em `GET /shifts/{id}/track-points`).
-9. **GPS inativo** — pausar a rota por 6 min — sheet de encerrar mostra "GPS ficou inativo por 6 min".
+9. **GPS inativo** — desligar a Localização do emulador por 6 min (pausar a rota não basta: o emulador continua informando a última posição) — sheet de encerrar mostra "GPS ficou inativo por 6 min".
 10. **Encerrar** — resumo final igual ao `GET /shifts/{id}`; tentar lançar ganho depois é bloqueado; notificação some.
 11. **Histórico** — "Hoje"/"Ontem" com o lucro do dia correto; iniciar um novo expediente pelo botão.
 12. **Moto Flex** — trocar a moto para Flex; ao iniciar, o app pergunta o combustível; com Etanol, o custo usa R$ 3,75.

@@ -10,9 +10,17 @@ univesp/
   pi-iv-app/    # este repositório
 ```
 
+## Funcionalidades
+
+- **Conta:** cadastro, login, sessão persistida, aviso de sessão expirada, sair.
+- **Perfil:** nome, moto (modelo, combustível Gasolina/Etanol/Flex, consumo km/l, cilindrada, ano) e preço do combustível.
+- **Expediente:** iniciar (Flex pergunta o combustível), GPS em *foreground service* com fila local (Room) e envio em lote mesmo após ficar sem internet, lucro parcial ao vivo, banner do GPS, lançar/sobrescrever ganhos, encerrar com aviso de GPS inativo.
+- **Histórico e análise:** lucro por dia, resumo de 7/30/90 dias (ganhos, combustível, km, tempo, valor hora/km, média por dia), detalhes do dia.
+- **Acabamento:** faixa "Sem internet", textos e números em pt-BR, contraste WCAG AA, TalkBack, fonte 2×.
+
 ## Status
 
-Etapas 1–9 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perfil; Home com último registro e início de expediente; rastreamento de GPS com fila offline; Home em andamento com ganhos e encerramento; Histórico com análise por período; polimento: nome/ícone, sem internet, sessão expirada, acessibilidade). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
+As 10 etapas do plano estão concluídas; falta a validação manual no emulador/celular ([roteiro de demonstração](docs/demo.md)). Plano em [`docs/app-plan.md`](docs/app-plan.md), protótipos em [`docs/prototypes/`](docs/prototypes/), setup da máquina em [`docs/setup.md`](docs/setup.md).
 
 ## Stack
 
@@ -24,6 +32,7 @@ Etapas 1–9 de 10 concluídas (scaffold; rede e sessão; Login e Cadastro; Perf
 | DI | Hilt 2.60 (KSP) |
 | Rede | Retrofit 3 + OkHttp 5 + kotlinx.serialization |
 | Navegação | Navigation Compose com rotas tipadas |
+| GPS e fila | Fused Location Provider, *foreground service*, Room, WorkManager (Hilt Work) |
 | Qualidade | ktlint (`ktlint_official`), Android Lint |
 | Testes | JUnit 4, kotlinx-coroutines-test, Turbine, MockWebServer, Robolectric + Compose UI Test |
 
@@ -55,11 +64,24 @@ Documentação interativa da API: `http://localhost:8000/docs`.
 | Build | URL | Como mudar |
 |---|---|---|
 | debug | `http://10.0.2.2:8000/api/v1/` (emulador → Windows) | `api.baseUrl=...` no `local.properties` (não versionado) |
-| release | placeholder HTTPS | definida quando houver deploy |
+| release | `http://127.0.0.1:8000/api/v1/` (celular com `adb reverse`) | `api.releaseUrl=...` no `local.properties` ou variável `API_RELEASE_URL` |
 
-Para celular via USB: `adb reverse tcp:8000 tcp:8000` e, no `local.properties`, `api.baseUrl=http://localhost:8000/api/v1/`.
+Para celular via USB: `adb reverse tcp:8000 tcp:8000` e, no `local.properties`, `api.baseUrl=http://localhost:8000/api/v1/` (debug).
 
-HTTP sem TLS só é permitido no build **debug** e só para `10.0.2.2`, `localhost` e `127.0.0.1` (`app/src/debug/res/xml/network_security_config.xml`).
+HTTP sem TLS só é permitido para `localhost`/`127.0.0.1` (`app/src/main/res/xml/network_security_config.xml`) e, no debug, também para `10.0.2.2` (`app/src/debug/res/xml/`). Uma API publicada deve usar HTTPS.
+
+## APK de release
+
+```bash
+./scripts/create-keystore.sh          # uma vez: gera release.jks + keystore.properties (fora do git)
+./gradlew assembleRelease             # app/build/outputs/apk/release/app-release.apk
+adb install -r app/build/outputs/apk/release/app-release.apk
+adb reverse tcp:8000 tcp:8000         # celular acessa a API do PC
+```
+
+- R8 (minificação + remoção de recursos) ligado; APK com ~2,3 MB.
+- Sem `keystore.properties`, o release é assinado com a chave de **debug** (aviso no build) — serve para testar, não para distribuir.
+- Guarde a senha e um backup da `release.jks`: sem ela não dá para publicar atualizações do mesmo app.
 
 ## Contrato com a API
 
@@ -67,7 +89,18 @@ HTTP sem TLS só é permitido no build **debug** e só para `10.0.2.2`, `localho
 
 ## CI
 
-[`.github/workflows/android.yml`](.github/workflows/android.yml): a cada push na `main` e em pull requests roda ktlint, Android Lint, testes unitários e o build debug; o APK fica como artefato da execução.
+[`.github/workflows/android.yml`](.github/workflows/android.yml): a cada push na `main` e em pull requests roda ktlint, Android Lint (avisos quebram o build), testes unitários e os builds debug e release; os dois APKs ficam como artefatos da execução. Um push de tag `v*` (ex.: `git tag v1.0.0 && git push --tags`) cria um **GitHub Release** com o APK.
+
+Para o release do CI sair assinado com a sua chave, cadastre em *Settings → Secrets and variables → Actions*:
+
+| Tipo | Nome | Valor |
+|---|---|---|
+| Secret | `RELEASE_KEYSTORE_BASE64` | `base64 -w0 release.jks` |
+| Secret | `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_PASSWORD` | senha usada no `create-keystore.sh` |
+| Secret | `RELEASE_KEY_ALIAS` | `expediente` |
+| Variable | `API_RELEASE_URL` | URL HTTPS da API publicada (opcional) |
+
+Sem os secrets, o CI gera o release assinado com a chave de debug.
 
 ## Créditos
 
