@@ -17,7 +17,7 @@ val localProperties =
 
 val debugApiBaseUrl = localProperties.getProperty("api.baseUrl") ?: "http://10.0.2.2:8000/api/v1/"
 val releaseApiBaseUrl =
-    System.getenv("API_RELEASE_URL")
+    System.getenv("API_RELEASE_URL")?.takeIf { it.isNotBlank() }
         ?: localProperties.getProperty("api.releaseUrl")
         ?: "http://127.0.0.1:8000/api/v1/"
 
