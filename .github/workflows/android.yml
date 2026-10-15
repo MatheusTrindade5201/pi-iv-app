@@ -60,7 +60,12 @@ jobs:
           RELEASE_KEY_ALIAS: ${{ secrets.RELEASE_KEY_ALIAS }}
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
           API_RELEASE_URL: ${{ vars.API_RELEASE_URL }}
-        run: ./gradlew assembleRelease
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* && -z "$API_RELEASE_URL" ]]; then
+            echo "::error::Variable API_RELEASE_URL ausente: o APK publicado apontaria para 127.0.0.1"
+            exit 1
+          fi
+          ./gradlew assembleRelease
 
       - name: Publicar APK release
         uses: actions/upload-artifact@v4
