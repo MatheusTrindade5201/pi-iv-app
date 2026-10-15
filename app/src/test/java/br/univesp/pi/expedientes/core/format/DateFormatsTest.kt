@@ -42,6 +42,8 @@ class DateFormatsTest {
         assertEquals(BigDecimal("46.85"), perHour(BigDecimal("187.40"), 240))
         assertEquals(BigDecimal("2.40"), perKm(BigDecimal("187.40"), BigDecimal("78.2")))
         assertEquals(BigDecimal("0.13"), perHour(BigDecimal("0.25"), 120))
+        assertEquals(BigDecimal("27.60"), perHour(BigDecimal("27.60"), 2))
+        assertEquals(BigDecimal("20.00"), perHour(BigDecimal("30.00"), 90))
         assertNull(perHour(BigDecimal.TEN, 0))
         assertNull(perKm(BigDecimal.TEN, BigDecimal("0.000")))
     }
