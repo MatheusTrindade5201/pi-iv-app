@@ -72,9 +72,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ github.token }}
+        # expediente.apk tem nome fixo para o link permanente .../releases/latest/download/expediente.apk
         run: |
           cp app/build/outputs/apk/release/app-release.apk "expediente-${GITHUB_REF_NAME}.apk"
-          gh release create "$GITHUB_REF_NAME" "expediente-${GITHUB_REF_NAME}.apk" --title "Expediente ${GITHUB_REF_NAME}" --generate-notes
+          cp app/build/outputs/apk/release/app-release.apk expediente.apk
+          gh release create "$GITHUB_REF_NAME" "expediente-${GITHUB_REF_NAME}.apk" expediente.apk --title "Expediente ${GITHUB_REF_NAME}" --generate-notes
 
       - name: Publicar relatórios
         if: failure()
